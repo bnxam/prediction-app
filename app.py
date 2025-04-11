@@ -5,6 +5,8 @@ import numpy as np
 
 # Sidebar navigation
 # st.sidebar.image("logo.png", width=70)
+st.set_page_config(layout="wide")
+
 st.sidebar.markdown("### Dashboard")
 st.sidebar.markdown("### 📈 Prédiction")
 st.sidebar.markdown("### 🔄 Historique")
@@ -21,13 +23,13 @@ with col1:
     st.markdown("### 🔴 10 %")
 
 with col2:
-    method = st.selectbox("Méthode de prédiction", ["LSTM", "ARIMA", "MLP"])
+    method = st.selectbox("Méthode de prédiction", ["LSTM", "SARIMA"])
 
 with col3:
     display_format = st.selectbox("Format d’affichage", ["Graphe", "Tableau"])
 
 with col4:
-    download_format = st.selectbox("Format de téléchargement", ["CSV", "Excel"])
+    download_format = st.selectbox("Format de téléchargement", ["CSV", "PDF"])
     st.download_button("Télécharger", "Fichier.csv", file_name="prediction.csv")
 
 # Fake prediction data
@@ -38,11 +40,12 @@ df = pd.DataFrame({"Mois": months, "Consommation": consumption})
 
 # Display data
 if display_format == "Graphe":
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(df["Mois"], df["Consommation"], marker='o', color='orange')
     ax.set_ylabel("Consommation")
     ax.set_xlabel("Mois")
     ax.set_title("Prédiction mensuelle")
+    ax.tick_params(axis='x', labelrotation=90)
     ax.grid(True)
     st.pyplot(fig)
 else:
@@ -50,9 +53,9 @@ else:
 
 # Predicted cost
 st.markdown("""
-<div style='background-color:#d3e1ea;padding: 20px;border-radius: 10px;'>
+<div style='marign-top: 10px ;background-color:#16404D;padding: 20px;border-radius: 10px;'>
     <h4>Le coût Prédit pour cette durées :</h4>
-    <h1 style='color: navy;'>40 000 000 DA</h1>
+    <h1 style='color: #fff;'>40 000 000 DA</h1>
 </div>
 """, unsafe_allow_html=True)
 
