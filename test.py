@@ -1,60 +1,100 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from streamlit_option_menu import option_menu
 
 # Configuration de la page
-st.set_page_config(layout="wide", page_title="Dashboard Énergie")
+st.set_page_config(layout="wide", page_title="Dashboard Énergie", initial_sidebar_state="expanded")
 
-# --- SIDEBAR DESIGN ---
-with st.sidebar:
-
-    st.markdown(
-    """
+# ------ Style CSS personnalisé ------
+st.markdown("""
     <style>
-        /* Appliquer le fond à toute la sidebar */
-        section[data-testid="stSidebar"] {
-            background-color: #95a6b7;
+        .sidebar-logo {
+            position: relative;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .sidebar-disabled {
-            color: #c9d6e4;
-            cursor: not-allowed;
-            padding: 5px 10px;
+        .sidebar-logo img {
+            width: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
-        .sidebar-active {
-            background-color: #7DACCA;
-            color: white;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-bottom: 8px;
+        .logout-container {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            width: 250px;
+        }
+        body {
+            background-color: #f0f0f5;
         }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
+# ------ Sidebar ------
+with st.sidebar:
+    # Logo
+    st.markdown('<div class="sidebar-logo">', unsafe_allow_html=True)
+    try:
+        st.image("portrait.jpg", width=80)
+    except Exception:
+        st.warning("Image du logo introuvable.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
+    # Menu
+    selected = option_menu(
+        menu_title=None,
+        options=["Dashboard", "Historique", "Prédictions"],
+        icons=["speedometer", "clock-history", "bar-chart-line"],
+        default_index=0,
+        styles={
+            "container": {"padding": "0!important", "background-color": "#f8f8ff"},
+            "icon": {"color": "#6a0dad", "font-size": "20px"},
+            "nav-link": {
+                "font-size": "16px",
+                "text-align": "left",
+                "margin": "15px 5px",
+                "border-radius": "10px",
+                "color": "#333",
+                "padding": "10px 15px",
+            },
+            "nav-link-selected": {
+                "background-color": "#d1b3ff",
+                "color": "#000",
+                "font-weight": "bold",
+                "border-radius": "10px",
+            }
+        }
+    )
 
-
-
-
-
-    st.image("image\portrait.jpg", width=80)  # Remplace par ton logo
-    st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'>Nom de l'entreprise</p>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-active'>📊 Dashboard</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-disabled'>🕒 Historique</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-disabled'>🔮 Prédictions</div>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.button("🚪 Se déconnecter")
-
-# --- ENTÊTE PRINCIPALE ---
-st.title("Dataset Global de l’Entreprise")
+    # Déconnexion placée en bas
+    st.markdown("""
+        <div class="logout-container">
+            <hr style="margin-top:20px;margin-bottom:10px;">
+            <a href="#" style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: #6a0dad;
+                font-weight: bold;
+                text-decoration: none;
+                font-size: 16px;
+            ">
+                🔒 Déconnexion
+            </a>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Données fournies
 data = {
-    'datetime':  [
+    'datetime': [
         '2004-12-25 01:00:00', '2004-12-25 02:00:00', '2004-12-25 03:00:00',
         '2004-12-25 04:00:00', '2004-12-25 05:00:00', '2004-12-25 06:00:00',
         '2004-12-25 07:00:00', '2004-12-25 08:00:00', '2004-12-25 09:00:00',
@@ -106,51 +146,50 @@ data = {
     ]
 }
 
-# Convertir les données en DataFrame
-df = pd.DataFrame(data)
-df['datetime'] = pd.to_datetime(df['datetime'])
+# Vérifier la cohérence des longueurs
+if len(data['datetime']) == len(data['value']):
+    df = pd.DataFrame(data)
+    df['datetime'] = pd.to_datetime(df['datetime'])
+else:
+    st.error("Les longueurs des colonnes ne sont pas égales.")
+    st.stop()
 
-
+# --- ENTÊTE PRINCIPALE ---
+st.title("Dataset Global de l’Entreprise")
 
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    # --- Affichage du graphique principal ---
     st.subheader("Valeurs au cours du temps")
     st.line_chart(df.set_index("datetime")['value'])
 
-    # Statistiques
     st.markdown("### 🔍 Statistiques")
-    st.write(f"La valeur **maximum** : {df['value'].max()} MW")
-    st.write(f"La valeur **minimum** : {df['value'].min()} MW")
-    st.write(f"La **moyenne** : {int(df['value'].mean())} MW")
+    st.write(f"🔺 **Maximum** : {df['value'].max()} MW")
+    st.write(f"🔻 **Minimum** : {df['value'].min()} MW")
+    st.write(f"📊 **Moyenne** : {int(df['value'].mean())} MW")
 
 with col2:
-    # Sélection de la date
     st.subheader("📅 Sélectionnez une date")
     selected_date = st.date_input("Choisissez la date", value=pd.to_datetime("2004-12-25"))
 
-    # Filtrer les données pour la date choisie
-    filtered_df = df[df['datetime'].dt.date == selected_date]
+    filtered_data = df[df['datetime'].dt.date == selected_date]
+    if not filtered_data.empty:
+        st.write(f"Valeurs pour le {selected_date}:")
+        st.write(filtered_data[['datetime', 'value']])
+    else:
+        st.warning("Aucune donnée disponible pour cette date.")
 
-    # Affichage
-    st.write("Table des valeurs horaires pour la date sélectionnée :")
-    st.dataframe(filtered_df)
 
 
-# Partie basse : histogramme + graphique d'évolution
 col3, col4 = st.columns(2)
+
 with col3:
-    st.subheader("📊 Histogramme interactif")
-    st.bar_chart(df.set_index("datetime")['value'])
+        st.subheader("📊 Histogramme interactif")
+        st.bar_chart(df.set_index("datetime")['value'])
 
 with col4:
-    st.subheader("📈 Consommation du dernier jour")
-
-    # Trouver la dernière date dans les données
-    last_day = df['datetime'].dt.date.max()
-    last_day_data = df[df['datetime'].dt.date == last_day]
-
-    # Afficher un graphique pour le dernier jour
-    st.line_chart(last_day_data.set_index('datetime')['value'])
-    st.caption(f"Consommation pour le {last_day}")
+        st.subheader("📈 Consommation du dernier jour")
+        last_day = df['datetime'].dt.date.max()
+        last_day_data = df[df['datetime'].dt.date == last_day]
+        st.line_chart(last_day_data.set_index('datetime')['value'])
+        st.caption(f"Consommation pour le {last_day}")
