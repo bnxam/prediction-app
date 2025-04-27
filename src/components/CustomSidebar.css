@@ -1,0 +1,37 @@
+/* CustomSidebar.css */
+
+/* Ajoute ceci pour forcer toute la page à prendre 100% de la hauteur */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.layout-container {
+    display: flex;
+    height: 100vh; /* S'assure que le conteneur prend toute la hauteur de la page */
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #DFC57B;
+    color: #ECDCAB;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Sidebar réduite */
+.sidebar.collapsed {
+    width: 80px;
+}
+
+/* Contenu principal */
+.content-container {
+    flex: 1;
+    padding: 20px;
+    /* Couleur foncée comme ta capture */
+    color: white;
+}
