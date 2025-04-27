@@ -1,13 +1,28 @@
 
+
+ // Assure-toi que le chemin est correct
 import React from 'react';
-import Historique from './pages/Historique'; // Assure-toi que le chemin est correct
+import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import Prediction from './pages/prediction';
+import Historique from './pages/Historique';
+
+
 
 function App() {
   return (
-    <div>
-      <Historique /> {/* Affiche la page Historique */}
-    </div>
+    <BrowserRouter>
+      <Routes>
+      <Route path="/historique" element={<Historique />} />
+        <Route path="/prediction" element={<Prediction />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
+export default App
 
-export default App;
+
+
