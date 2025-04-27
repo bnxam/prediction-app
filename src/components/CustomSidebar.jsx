@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Sidebar as ProSidebar, Menu, MenuItem, SubMenu, useProSidebar } from 'react-pro-sidebar';
 import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
-import './CustomSidebar.css'; 
+
+import './css/CustomSidebar.css'
 import LogoProfil from './images/portrait.jpg';
 import { Link } from 'react-router-dom'; // Ajouter ce import
 
