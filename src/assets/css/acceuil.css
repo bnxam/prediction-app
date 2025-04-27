@@ -1,0 +1,22 @@
+
+.main-banner {
+    background-image: url("../images/acc2.jpg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding-top: 100px;
+    padding-bottom: 240px;
+    text-align: center;
+    background-color: #2a2a2a;
+  }
+
+.h2em{
+    color: #780004;
+}
+.h2{
+    color: #1a1b41;
+}
+
+.nav{
+    background-color: #c4d8d7;
+}
