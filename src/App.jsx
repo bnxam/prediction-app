@@ -9,6 +9,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Prediction from './pages/prediction';
 import Historique from './pages/Historique';
+import Dashboard from './pages/dashboard';
 
 
 
@@ -18,6 +19,7 @@ function App() {
       <Routes>
       <Route path="/historique" element={<Historique />} />
         <Route path="/prediction" element={<Prediction />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
