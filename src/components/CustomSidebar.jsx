@@ -1,83 +1,86 @@
-import React, { useState } from 'react';
-import { Sidebar as ProSidebar, Menu, MenuItem, SubMenu, useProSidebar } from 'react-pro-sidebar';
+import React, { useState, useEffect } from 'react';
+import { Sidebar as ProSidebar, Menu, MenuItem, useProSidebar } from 'react-pro-sidebar';
 import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
-
-import '../assets/css/CustomSidebar.css'
-import LogoProfil from '../assets/images/portrait.jpg';
-import { Link } from 'react-router-dom'; // Ajouter ce import
-
-
+import LogoProfil from '../assets/images/logo.jpeg';
+import '../assets/css/CustomSidebar.css';
+import { Link } from 'react-router-dom';
 
 function CustomSidebar() {
   const { collapseSidebar } = useProSidebar();
-  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768); 
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
+
+  const handleResize = () => {
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    setIsCollapsed(mobile);
+    if (mobile) {
+      collapseSidebar();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Pour appliquer au premier chargement
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
     collapseSidebar();
-    setCollapsed(!collapsed);
   };
 
   return (
-    <div className="layout-container">
-      <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <>
+      {/* Bouton burger visible uniquement sur mobile */}
+      {isMobile && (
+        <button 
+          onClick={toggleSidebar} 
+          className="fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded sm:hidden"
+        >
+          <FaBars />
+        </button>
+      )}
 
+      <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <Menu
           menuItemStyles={{
             button: {
-              color: '#fff',
+              color: '#585858',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
-                color: '#BF932A',
+                backgroundColor: '#000229',
+                color: '#919397'
               },
             },
           }}
         >
-          {/* Bouton pour ouvrir/fermer */}
-          <MenuItem
-            icon={<FaBars />}
-            onClick={toggleSidebar}
-            style={{ marginBottom: '20px' }}
-          >
-            {collapsed ? '' : 'Menu'}
-          </MenuItem>
-
-          {/* Image Profil */}
-          <MenuItem
-           icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
-          
+          <div style={{ height: '60px' }}></div> {/* ESPACE AVANT PROFIL */}
+          <MenuItem icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
           >
           Profil
           </MenuItem>
+          <MenuItem icon={<FaHome />} component={<Link to="/prediction" />}>Dashboard</MenuItem>
+          <MenuItem icon={<FaUser />} component={<Link to="/historique" />}>Historique</MenuItem>
+          <MenuItem icon={<FaCog />}>Prédiction</MenuItem>
+        </Menu>
 
-          {/* Autres liens */}
-          <MenuItem icon={<FaHome />} >Dashboard</MenuItem>
-          <MenuItem icon={<FaUser />} >Historique</MenuItem>
-          <MenuItem icon={<FaCog />} >Prédiction</MenuItem>
-         </Menu>
-
-        {/* Partie Déconnexion tout en bas */}
-        <div style={{ flexGrow: 1 }}></div> {/* Espace vide pour pousser Déconnexion en bas */}
+        <div style={{ flexGrow: 1 }}></div>
 
         <Menu
           menuItemStyles={{
             button: {
-              color: '#fff',
+              color: '#585858',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
-                color: '#BF932A',
+                backgroundColor: '#000229',
+                color: '#919397'
               },
             },
           }}
         >
           <MenuItem icon={<FaSignOutAlt />}>Déconnexion</MenuItem>
         </Menu>
-
       </div>
-
-      <div className="content-container">
-        {/* Ton contenu de page ici */}
-      </div>
-    </div>
+    </>
   );
 }
 
