@@ -5,8 +5,8 @@ import erreur from '../../assets/images/etat-derreur.png'
 
 const MethodSummary = () => {
   return (
-    <div className="bg-white p-6 pt-18 mb-8">
-      <h2 className="text-2xl font-bold mb-4">Informations Clés de l'Analyse</h2>
+    <div className="bg-white p-6  mb-8">
+      <h2 className="text-2xl font-bold mb-13 text-blue-950">Informations Clés de l'Analyse</h2>
       <div className="flex gap-6 w-full">
         <div className="bg-fuchsia-100 p-6 rounded-sm shadow-md text-center transition duration-300 hover:scale-105 hover:shadow-lg flex-1">
           <img src={method} alt="Méthode Utilisée" className='w-6 mb-2'/>
