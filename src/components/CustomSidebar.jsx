@@ -53,16 +53,10 @@ function CustomSidebar() {
               },
             },
           }}
-
-
-
-
-          
-
           
         >
           <div style={{ height: '60px' }}></div> {/* ESPACE AVANT PROFIL */}
-          <MenuItem icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
+          <MenuItem component={<Link to="/profile" />} icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
           >
           Profil
           </MenuItem>
