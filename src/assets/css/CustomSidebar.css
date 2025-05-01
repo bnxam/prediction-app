@@ -31,7 +31,7 @@ html, body {
 /* Contenu principal */
 .content-container {
     flex: 1;
-    padding: 20px;
+    /* padding: 20px; */
     /* Couleur foncée comme ta capture */
-    color: white;
+    /* color: white; */
 }
