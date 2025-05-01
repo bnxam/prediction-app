@@ -1,5 +1,5 @@
 import React from 'react';
-import LogoProfil from '../../assets/images/logo.jpeg';
+import LogoProfil from '../../assets/images/portrait.jpg';
 
 const ProfileImage = ({ onImageChange }) => (
   <div className="flex flex-col items-center mb-8 p-6 bg-white rounded shadow-md">
