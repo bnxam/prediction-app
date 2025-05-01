@@ -66,9 +66,9 @@ function CustomSidebar() {
           >
           Profil
           </MenuItem>
-          <MenuItem icon={<FaHome />} component={<Link to="/prediction" />}>Dashboard</MenuItem>
+          <MenuItem icon={<FaHome />} component={<Link to="/dashboard" />}>Dashboard</MenuItem>
+          <MenuItem icon={<FaCog />} component={<Link to="/prediction" />}>Prédiction</MenuItem>
           <MenuItem icon={<FaUser />} component={<Link to="/historique" />}>Historique</MenuItem>
-          <MenuItem icon={<FaCog />}>Prédiction</MenuItem>
         </Menu>
 
         <div style={{ flexGrow: 1 }}></div>
