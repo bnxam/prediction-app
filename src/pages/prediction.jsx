@@ -1,9 +1,9 @@
 import React from 'react';
-import Sidebar from '../components/sidebar'; 
+// import Sidebar from '../components/sidebar'; 
 import PredBar from '../components/predComponent/predBar';
-import NewPredictionButton from '../components/predComponent/newPredictionButton';
+// import NewPredictionButton from '../components/predComponent/newPredictionButton';
 import GrapheSection from '../components/predComponent/grapheSection';
-import GrapheAction from '../components/predComponent/grapheAction';
+// import GrapheAction from '../components/predComponent/grapheAction';
 import MethodSummary from '../components/predComponent/methodSummary';
 import PredictionResults from '../components/predComponent/predictionResults';
 import CustomSidebar from '../components/CustomSidebar';
@@ -25,9 +25,9 @@ const Prediction = () => {
         </div>
 
        <PredBar />
-    <NewPredictionButton/>  
+    {/* <NewPredictionButton/>   */}
     <GrapheSection/>
-    <GrapheAction/>
+    {/* <GrapheAction/> */}
     <MethodSummary/>
     <PredictionResults/>
       </div>

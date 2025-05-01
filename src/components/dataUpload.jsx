@@ -47,10 +47,10 @@ const DataUpload = () => {
   return (
  
 
-<div className="mt-4 w-full bg-gray-100 p-4 rounded-lg shadow">
+<div className="mt-4 w-full bg-gray-100 p-4  shadow ">
 
-          <h3 className="text-lg font-semibold mb-2">Formulaire d'insertion</h3>
-          <form className="flex flex-col gap-4">
+          {/* <h3 className="text-lg font-semibold mb-2">Formulaire d'insertion</h3> */}
+          <form className="flex flex-col gap-4 border-gray-700">
 
           <select onChange={handleFormatChange} className="border border-gray-300 p-2 rounded-lg">
           <option value="csv">CSV</option>
@@ -75,7 +75,10 @@ const DataUpload = () => {
 )}
             <button 
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition"
+              // style={{ backgroundColor: "#ECDCAB" 
+                
+              // }}
+              className=" bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition"
               onClick={() => {
                 if (!data) {
                   setErrorMessage('Aucune donnée insérée.');
