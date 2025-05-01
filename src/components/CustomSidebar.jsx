@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar as ProSidebar, Menu, MenuItem, useProSidebar } from 'react-pro-sidebar';
 import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
-import LogoProfil from '../assets/images/logo.jpeg';
+import LogoProfil from '../assets/images/portrait.jpg';
 import '../assets/css/CustomSidebar.css';
 import { Link } from 'react-router-dom';
 
@@ -46,13 +46,20 @@ function CustomSidebar() {
         <Menu
           menuItemStyles={{
             button: {
-              color: '#585858',
+              color: '#fff',
               '&:hover': {
-                backgroundColor: '#000229',
-                color: '#919397'
+                backgroundColor: '#ECDCAB',
+                color: '#BF932A',
               },
             },
           }}
+
+
+
+
+          
+
+          
         >
           <div style={{ height: '60px' }}></div> {/* ESPACE AVANT PROFIL */}
           <MenuItem icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
@@ -69,10 +76,10 @@ function CustomSidebar() {
         <Menu
           menuItemStyles={{
             button: {
-              color: '#585858',
+              color: '#fff',
               '&:hover': {
-                backgroundColor: '#000229',
-                color: '#919397'
+                backgroundColor: '#ECDCAB',
+                color: '#BF932A',
               },
             },
           }}
@@ -85,3 +92,12 @@ function CustomSidebar() {
 }
 
 export default CustomSidebar;
+
+
+
+
+
+
+
+
+
