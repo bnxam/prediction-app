@@ -15,8 +15,9 @@ html, body {
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background-color: #DFC57B;
-    color: #ECDCAB;
+    /* background-color: #84a59d; */
+    background-color: #5c7285;
+    /* color: #ADC178; */
     position: relative;
     display: flex;
     flex-direction: column;

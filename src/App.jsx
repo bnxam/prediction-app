@@ -12,6 +12,7 @@ import Historique from './pages/Historique';
 import Acceuil from './pages/acceuil';
 import Dashboard from './pages/dashboard';
 import Profile from './pages/Profile';
+import Traitement from './pages/traitement';
 
 
 
@@ -23,7 +24,7 @@ function App() {
         <Route path="/historique" element={<Historique />} />
         <Route path="/prediction" element={<Prediction />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/prediction" element={<Prediction />} />
+        <Route path="/traitement" element={<Traitement />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
