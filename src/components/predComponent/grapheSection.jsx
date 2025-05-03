@@ -7,8 +7,8 @@ import jsPDF from 'jspdf';
 const GrapheSection = () => {
   const chartRef = useRef(); // Référence graphe ou tableau
   const [displayMode, setDisplayMode] = useState('graph'); // 'graph' ou 'table'
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const data = [
     { Date: '11/11/2002', Valeur: 34 },
@@ -102,7 +102,7 @@ const GrapheSection = () => {
 
       <div className="flex flex-wrap gap-4 justify-end pt-5">
         {/* Bouton pour ouvrir le modal de confirmation */}
-        <button 
+        <button
           onClick={() => setIsConfirmModalOpen(true)}
           className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
         >
@@ -110,7 +110,7 @@ const GrapheSection = () => {
         </button>
 
         {/* Bouton pour afficher le formulaire de paiement */}
-        <button 
+        <button
           onClick={() => setShowPaymentForm(!showPaymentForm)}
           className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
         >
@@ -126,13 +126,13 @@ const GrapheSection = () => {
             <p className="text-gray-600 mb-6">Voulez-vous vraiment choisir ce modèle comme votre nouveau modèle de prediction ?</p>
 
             <div className="flex justify-center gap-4">
-              <button 
+              <button
                 onClick={() => setIsConfirmModalOpen(false)}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg"
               >
                 Annuler
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setIsConfirmModalOpen(false);
                   console.log('Modèle choisi confirmé !');
@@ -148,10 +148,10 @@ const GrapheSection = () => {
 
       {/* Formulaire de paiement (affiché sous les boutons) */}
       {showPaymentForm && (
-        
-        
-        <div 
-        className="mt-6 p-6 border rounded-2xl shadow-inner  w-full max-w-md mx-auto bg-gray-50">
+
+
+        <div
+          className="mt-6 p-6 border rounded-2xl shadow-inner  w-full max-w-md mx-auto bg-gray-50">
           <h2 className="text-xl font-bold mb-6 text-center">Paiement</h2>
 
           <form className="flex flex-col gap-4 ">

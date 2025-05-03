@@ -2,11 +2,11 @@ import React from 'react'
 import method from '../../assets/images/analyse.png'
 import param from '../../assets/images/parametres-des-engrenages.png'
 import erreur from '../../assets/images/etat-derreur.png'
+import PercentageCircle from './PercentageCircle'
 
 const MethodSummary = () => {
   return (
     <div className="bg-white p-6  mb-8">
-      <h2 className="text-2xl font-bold mb-13 text-blue-950">Informations Clés de l'Analyse</h2>
       <div className="flex gap-6 w-full">
         <div className="bg-fuchsia-100 p-6 rounded-sm shadow-md text-center transition duration-300 hover:scale-105 hover:shadow-lg flex-1">
           <img src={method} alt="Méthode Utilisée" className='w-6 mb-2'/>
@@ -24,6 +24,7 @@ const MethodSummary = () => {
           <img src={erreur} alt="Taux d'Erreur" className='w-6 mb-2'/>
           <h3 className="text-lg font-bold mb-2">Taux d'Erreur</h3>
           <p className="text-gray-600">4.2%</p>
+          {/* <PercentageCircle  percentage={4} /> */}
         </div>
       </div>
     </div>

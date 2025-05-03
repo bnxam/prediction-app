@@ -1,17 +1,8 @@
-
-
 import React from 'react';
-import { ProSidebarProvider } from 'react-pro-sidebar';
-import CustomSidebar from '../components/CustomSidebar';
-import Cartesinfo from '../components/dashComponent/Cartesinfo';
-import SalesChart from '../components/dashComponent/SalesChart';
-import VolumeServiceChart from '../components/dashComponent/VolumeServiceChart';
-import TableauJournee from '../components/dashComponent/tableaujournee';
-// import RevenueChart from '../components/RevenueChart';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from 'recharts';
 
-export default function Dashboard() {
-
-    const salesData = [
+const Graphe = () => {
+    const data = [
         { datetime: '2004-12-25 01:00:00', value: 16669.0 },
         { datetime: '2004-12-25 02:00:00', value: 16218.0 },
         { datetime: '2004-12-25 03:00:00', value: 16135.0 },
@@ -108,87 +99,49 @@ export default function Dashboard() {
         { datetime: '2004-12-28 22:00:00', value: 18135.0 },
         { datetime: '2004-12-28 23:00:00', value: 17112.0 }
     ];
-
-
-
+    const minValue = Math.min(...data.map(item => item.value));
+    // Optionnel: Ajouter une marge en dessous de la valeur minimale
+    const minDomain = minValue > 0 ? minValue * 0.9 : minValue * 1.1;
     return (
-        <div className="flex h-screen bg-gray-200">
-            <ProSidebarProvider>
-                <CustomSidebar />
-            </ProSidebarProvider>
 
-            <div className="flex-1 p-8 overflow-auto">
-                <div className="flex-1   overflow-auto ">
-                    <div className="flex justify-between items-center mb-6 rounded  p-3  bg-white shadow">
-                        <h5 className="text-lg font-bold text-gray-600 ">Dashboard</h5>
-                        <h5 className="text-lg font-bold text-gray-600 ">Nom de l'entreprise</h5>
-                    </div>
-                </div>
 
-                {/* Cartes */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Cartesinfo title="Valeur minimale" value="1398 MW" change="+12% d'hier" />
-          <Cartesinfo title="Valeur maximale" value="9800 MW" change="+8%  d'hier" />
-          <Cartesinfo title="Moyenne" value="5599" change="+4%  d'hier" />
-        </div> */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <Cartesinfo
-                        title="Valeur minimale"
-                        value="1398 MW"
-                        change="+12% d'hier"
-                        backgroundColor="bg-fuchsia-100"
+        <div className="mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
+
+            <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data}>
+                    <defs>
+                        <linearGradient id="colorValeur" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="datetime" />
+                    <YAxis domain={[minDomain, 'auto']} />
+                    <Tooltip />
+
+                    <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#8884d8"
+                        activeDot={{ r: 8 }}
+                        strokeWidth={2}
+                        dot={false}
                     />
-                    <Cartesinfo
-                        title="Valeur maximale"
-                        value="9800 MW"
-                        change="+8% d'hier"
-                        backgroundColor="bg-amber-50"
+
+                    <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="none"
+                        fill="url(#colorValeur)"
                     />
-                    <Cartesinfo
-                        title="Moyenne"
-                        value="5599"
-                        change="+4% d'hier"
-                        backgroundColor="bg-emerald-50"
-                    />
-                </div>
+                </LineChart>
+            </ResponsiveContainer>
 
-
-                {/* Graphiques */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <SalesChart data={salesData} />
-                    <DailyTable data={salesData} />
-
-                </div> */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[400px]">
-                    <div className="md:col-span-2 h-full">
-                        <SalesChart data={salesData} />
-                    </div>
-                    <div className="md:col-span-1 h-full overflow-y-auto">
-                        <TableauJournee data={salesData} />
-                    </div>
-                </div>
-                */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    {/* Premier conteneur - Graphique */}
-                    <div className="md:col-span-2 h-full bg-white p-4 rounded-2xl shadow-md">
-                        <SalesChart data={salesData} />
-                    </div>
-
-                    {/* Deuxième conteneur - Tableau */}
-                    <div className="md:col-span-1 h-full flex flex-col bg-white p-4 rounded-2xl shadow-md">
-                        <TableauJournee data={salesData} />
-                    </div>
-                </div>
-
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <VolumeServiceChart data={salesData} />
-                    {/* <RevenueChart data={salesData} /> */}
-                    < TableauJournee data={salesData} />
-
-                </div>
-            </div>
         </div>
+
     );
 }
+
+export default Graphe;

@@ -13,9 +13,9 @@ const Prediction = () => {
   return (
     <div className="flex h-screen">
       {/* Sidebar fixe à gauche */}
-        <ProSidebarProvider>
-              <CustomSidebar />
-            </ProSidebarProvider>
+      <ProSidebarProvider>
+        <CustomSidebar />
+      </ProSidebarProvider>
 
       {/* Contenu principal prend le reste */}
       <div className="flex-1 p-8   overflow-auto bg-neutral-200">
@@ -24,12 +24,14 @@ const Prediction = () => {
           <h5 className="text-lg font-bold text-gray-600 ">Nom de l'entreprise</h5>
         </div>
 
-       <PredBar />
-    {/* <NewPredictionButton/>   */}
-    <GrapheSection/>
-    {/* <GrapheAction/> */}
-    <MethodSummary/>
-    <PredictionResults/>
+
+        {/* <NewPredictionButton/>   */}
+        <MethodSummary />
+        <GrapheSection />
+        {/* <GrapheAction/> */}
+
+        <PredBar />
+        <PredictionResults />
       </div>
     </div>
   );

@@ -66,7 +66,7 @@ function NavBar() {
                                             aria-describedby="emailHelp"
                                         />
                                         <div id="emailHelp" className="mt-1 text-xs text-gray-500">
-                                        Votre adresse email restera strictement confidentielle.
+                                            Votre adresse email restera strictement confidentielle.
                                         </div>
                                     </div>
 
@@ -161,10 +161,10 @@ function NavBar() {
                                 onClick={toggleModal}
                             >
                                 <User className="mr-1 h-4 w-4" />
-                                 se connecter / s'inscrire
+                                se connecter / s'inscrire
                             </button>
 
-                            
+
                         </div>
 
                     </div>

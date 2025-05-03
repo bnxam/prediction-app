@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar as ProSidebar, Menu, MenuItem, useProSidebar } from 'react-pro-sidebar';
-import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt ,FaClock ,FaChartLine } from 'react-icons/fa';
 import LogoProfil from '../assets/images/portrait.jpg';
 import '../assets/css/CustomSidebar.css';
 import { Link } from 'react-router-dom';
@@ -48,8 +48,9 @@ function CustomSidebar() {
             button: {
               color: '#fff',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
-                color: '#BF932A',
+                backgroundColor: '#94b4c1',
+                color: '#364958',
+                borderRight: '4px solid rgb(47, 78, 104)'
               },
             },
           }}
@@ -61,8 +62,9 @@ function CustomSidebar() {
           Profil
           </MenuItem>
           <MenuItem icon={<FaHome />} component={<Link to="/dashboard" />}>Dashboard</MenuItem>
-          <MenuItem icon={<FaCog />} component={<Link to="/prediction" />}>Prédiction</MenuItem>
-          <MenuItem icon={<FaUser />} component={<Link to="/historique" />}>Historique</MenuItem>
+          <MenuItem icon={<FaChartLine />} component={<Link to="/prediction" />}>Prédiction</MenuItem>
+          <MenuItem icon={<FaCog />} component={<Link to="/traitement" />}>Traitement</MenuItem>
+          <MenuItem icon={<FaClock />} component={<Link to="/historique" />}>Historique</MenuItem>
         </Menu>
 
         <div style={{ flexGrow: 1 }}></div>
@@ -72,8 +74,9 @@ function CustomSidebar() {
             button: {
               color: '#fff',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
-                color: '#BF932A',
+                backgroundColor: '#94b4c1',
+                color: '#364958',
+                borderRight: '4px solid #364958'
               },
             },
           }}

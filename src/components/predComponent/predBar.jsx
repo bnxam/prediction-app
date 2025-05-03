@@ -9,16 +9,16 @@ const PredBar = () => {
   return (
     <div>
       {/* Ligne contenant les 3 éléments principaux */}
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6 mt-5">
 
         {/* Input de période */}
-        <div className="bg-white/30 p-4 rounded-lg shadow w-full sm:w-auto flex-1">
+        {/* <div className="bg-white/30 p-4 rounded-lg shadow w-full sm:w-auto flex-1">
           <input
             type="text"
             placeholder="Saisir la période..."
             className="border p-2 rounded-lg w-full border-gray-500 text-blue-950"
           />
-        </div>
+        </div> */}
 
         {/* Bouton prédiction */}
         <div className=" bg-white/30 p-4 rounded-lg shadow w-full sm:w-auto flex-1">
