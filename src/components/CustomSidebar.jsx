@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar as ProSidebar, Menu, MenuItem, useProSidebar } from 'react-pro-sidebar';
-import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt ,FaClock ,FaChartLine } from 'react-icons/fa';
+import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine } from 'react-icons/fa';
 import LogoProfil from '../assets/images/portrait.jpg';
 import '../assets/css/CustomSidebar.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 function CustomSidebar() {
   const { collapseSidebar } = useProSidebar();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768); 
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
+  const location = useLocation();
 
   const handleResize = () => {
     const mobile = window.innerWidth < 768;
@@ -21,7 +22,7 @@ function CustomSidebar() {
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
-    handleResize(); // Pour appliquer au premier chargement
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -30,9 +31,17 @@ function CustomSidebar() {
     collapseSidebar();
   };
 
+  // Configuration des items de menu
+  const menuItems = [
+    { path: '/profile', icon: <img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />, label: 'Profil' },
+    { path: '/dashboard', icon: <FaHome />, label: 'Dashboard' },
+    { path: '/prediction', icon: <FaChartLine />, label: 'Prédiction' },
+    { path: '/traitement', icon: <FaCog />, label: 'Traitement' },
+    { path: '/historique', icon: <FaClock />, label: 'Historique' },
+  ];
+
   return (
     <>
-      {/* Bouton burger visible uniquement sur mobile */}
       {isMobile && (
         <button 
           onClick={toggleSidebar} 
@@ -45,26 +54,30 @@ function CustomSidebar() {
       <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <Menu
           menuItemStyles={{
-            button: {
-              color: '#fff',
+            button: ({ level, active }) => ({
+              color: active ? '#364958' : '#fff',
+              backgroundColor: active ? '#94b4c1' : 'transparent',
+              borderRight: active ? '4px solid rgb(47, 78, 104)' : 'none',
               '&:hover': {
                 backgroundColor: '#94b4c1',
                 color: '#364958',
                 borderRight: '4px solid rgb(47, 78, 104)'
               },
-            },
+            }),
           }}
-          
         >
-          <div style={{ height: '60px' }}></div> {/* ESPACE AVANT PROFIL */}
-          <MenuItem component={<Link to="/profile" />} icon={<img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />}
-          >
-          Profil
-          </MenuItem>
-          <MenuItem icon={<FaHome />} component={<Link to="/dashboard" />}>Dashboard</MenuItem>
-          <MenuItem icon={<FaChartLine />} component={<Link to="/prediction" />}>Prédiction</MenuItem>
-          <MenuItem icon={<FaCog />} component={<Link to="/traitement" />}>Traitement</MenuItem>
-          <MenuItem icon={<FaClock />} component={<Link to="/historique" />}>Historique</MenuItem>
+          <div style={{ height: '60px' }}></div>
+          
+          {menuItems.map((item) => (
+            <MenuItem 
+              key={item.path}
+              icon={item.icon}
+              component={<Link to={item.path} />}
+              active={location.pathname === item.path}
+            >
+              {item.label}
+            </MenuItem>
+          ))}
         </Menu>
 
         <div style={{ flexGrow: 1 }}></div>
@@ -89,12 +102,3 @@ function CustomSidebar() {
 }
 
 export default CustomSidebar;
-
-
-
-
-
-
-
-
-

@@ -1,30 +1,27 @@
-import React from 'react'
-import method from '../../assets/images/analyse.png'
-import param from '../../assets/images/parametres-des-engrenages.png'
-import erreur from '../../assets/images/etat-derreur.png'
-import PercentageCircle from './PercentageCircle'
+import React from 'react';
+import PercentageCircle from './PercentageCircle';
 
 const MethodSummary = () => {
   return (
-    <div className="bg-white p-6  mb-8">
-      <div className="flex gap-6 w-full">
-        <div className="bg-fuchsia-100 p-6 rounded-sm shadow-md text-center transition duration-300 hover:scale-105 hover:shadow-lg flex-1">
-          <img src={method} alt="Méthode Utilisée" className='w-6 mb-2'/>
-          <h3 className="text-lg font-bold mb-2">Méthode Utilisée</h3>
-          <p className="text-gray-600">GRU</p>
-        </div>
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full">
+      {/* Parameters Card - Centered content */}
+      <div className="bg-[#fffcd6] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center text-center">
+        <h3 className="text-base md:text-lg font-bold mb-1 md:mb-2">Méthode utilisée</h3>
+        <p className="text-sm md:text-gray-600">LSTM</p>
+      </div>
+      <div className="bg-[#fff2e8] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center text-center">
+        <h3 className="text-base md:text-lg font-bold mb-1 md:mb-2">Paramètres</h3>
+        <p className="text-sm md:text-gray-600">lr=0.001, epochs=50</p>
+      </div>
+      <div className="bg-[#cce1ea] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center text-center">
+        <h3 className="text-base md:text-lg font-bold mb-1 md:mb-2">Période prédite </h3>
+        <p className="text-sm md:text-gray-600">25-12-2004 , 28-12-2004</p>
+      </div>
 
-        <div className="bg-amber-50 p-6 rounded-sm shadow-md text-center transition duration-300 hover:scale-105 hover:shadow-lg flex-1">
-          <img src={param} alt="Paramètres" className='w-6 mb-2'/>
-          <h3 className="text-lg font-bold mb-2">Paramètres</h3>
-          <p className="text-gray-600">lr=0.001, epochs=50</p>
-        </div>
-
-        <div className="bg-emerald-50 p-6 rounded-sm shadow-md text-center transition duration-300 hover:scale-105 hover:shadow-lg flex-1">
-          <img src={erreur} alt="Taux d'Erreur" className='w-6 mb-2'/>
-          <h3 className="text-lg font-bold mb-2">Taux d'Erreur</h3>
-          <p className="text-gray-600">4.2%</p>
-          {/* <PercentageCircle  percentage={4} /> */}
+      {/* Percentage Circle Card - Centered content */}
+      <div className="bg-[#ccfcd1] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center">
+        <div className="w-[60px] md:w-[80px] h-[60px] md:h-[80px] flex items-center justify-center">
+          <PercentageCircle percentage={4} />
         </div>
       </div>
     </div>

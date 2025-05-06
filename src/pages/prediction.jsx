@@ -19,10 +19,7 @@ const Prediction = () => {
 
       {/* Contenu principal prend le reste */}
       <div className="flex-1 p-8   overflow-auto bg-neutral-200">
-        <div className="flex justify-between items-center mb-6 rounded  p-3  bg-white shadow">
-          <h5 className="text-lg font-bold text-gray-600 ">Prediction</h5>
-          <h5 className="text-lg font-bold text-gray-600 ">Nom de l'entreprise</h5>
-        </div>
+        
 
 
         {/* <NewPredictionButton/>   */}
@@ -30,8 +27,8 @@ const Prediction = () => {
         <GrapheSection />
         {/* <GrapheAction/> */}
 
-        <PredBar />
-        <PredictionResults />
+        {/* <PredBar /> */}
+        {/* <PredictionResults /> */}
       </div>
     </div>
   );
