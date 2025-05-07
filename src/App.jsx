@@ -10,7 +10,7 @@ import './App.css'
 import Prediction from './pages/prediction';
 import Historique from './pages/Historique';
 import Acceuil from './pages/acceuil';
-import Dashboard from './pages/dashboard';
+import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Traitement from './pages/traitement';
 

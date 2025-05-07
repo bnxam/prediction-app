@@ -1,6 +1,6 @@
 import { Menu, User } from 'lucide-react';
 import React, { useState } from "react";
-import logo from '../../assets/images/2-removebg-preview.png';
+import logo from '../../assets/images/logo1.png';
 import '../../assets/css/acceuil.css'
 import { X } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';

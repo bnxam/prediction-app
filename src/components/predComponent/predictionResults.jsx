@@ -49,7 +49,7 @@ const PredictionResults = () => {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md mt-6">
-      <h2 className="text-2xl font-bold mb-4">Résultats de Prédiction (LSTM)</h2>
+      <h2 className="text-2xl font-bold mb-4">Les anciennes prédiction</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {models.map((model, index) => (
