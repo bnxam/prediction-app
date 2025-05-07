@@ -48,8 +48,11 @@ function CustomSidebar() {
             button: {
               color: '#fff',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
-                color: '#BF932A',
+              //   backgroundColor: '#ECDCAB',
+              //   color: '#BF932A',
+              // },
+                backgroundColor: '#94B4C1',
+                color: '#364958',
               },
             },
           }}
@@ -72,7 +75,7 @@ function CustomSidebar() {
             button: {
               color: '#fff',
               '&:hover': {
-                backgroundColor: '#ECDCAB',
+                backgroundColor: '#94B4C1',
                 color: '#BF932A',
               },
             },

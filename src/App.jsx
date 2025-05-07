@@ -12,6 +12,8 @@ import Historique from './pages/Historique';
 import Acceuil from './pages/acceuil';
 import Dashboard from './pages/dashboard';
 import Profile from './pages/Profile';
+import Profil from './pages/profil';
+
 
 
 
@@ -25,6 +27,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/prediction" element={<Prediction />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profil" element={<Profil />} />
+
       </Routes>
     </BrowserRouter>
   );
