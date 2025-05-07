@@ -33,7 +33,7 @@ function CustomSidebar() {
 
   // Configuration des items de menu
   const menuItems = [
-    { path: '/profile', icon: <img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />, label: 'Profil' },
+    { path: '/profil', icon: <img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />, label: 'Profil' },
     { path: '/dashboard', icon: <FaHome />, label: 'Dashboard' },
     { path: '/prediction', icon: <FaChartLine />, label: 'Prédiction' },
     { path: '/traitement', icon: <FaCog />, label: 'Traitement' },
