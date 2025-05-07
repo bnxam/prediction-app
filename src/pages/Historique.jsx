@@ -62,7 +62,7 @@ const Historique = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       <ProSidebarProvider>
         <CustomSidebar />
       </ProSidebarProvider>
@@ -70,7 +70,7 @@ const Historique = () => {
       <div className="flex-1 p-8">
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
-          <div className="flex flex-col bg-[#fff] p-6 rounded-l shadow-md">
+          <div className="flex flex-col bg-[#FFF] p-6 rounded-l shadow-md">
             <label className="text-lg font-semibold mb-3 text-gray-700">Filtrer par année les prédictions dont vous avez efectuer</label>
             <select className="border border-gray-300 p-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition">
               <option>2023</option>
@@ -79,7 +79,7 @@ const Historique = () => {
             </select>
           </div>
 
-          <div className="bg-[#fff] p-6 rounded-l shadow-md overflow-x-auto">
+          <div className="bg-[#FFF] p-6 rounded-l shadow-md overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-blue-100">
                 <tr>

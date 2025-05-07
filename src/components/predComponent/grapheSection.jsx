@@ -286,7 +286,7 @@ const GrapheSection = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 mt-5">
         {/* Format d'affichage */}
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Format d'affichage</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
@@ -299,7 +299,7 @@ const GrapheSection = () => {
         </div>
 
         {/* Méthode de prédiction */}
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Crrée une prédiction</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
@@ -310,7 +310,7 @@ const GrapheSection = () => {
         </div>
 
         {/* Format de Téléchargement */}
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Format de téléchargement</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700 transition-colors"
