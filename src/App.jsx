@@ -13,6 +13,8 @@ import Acceuil from './pages/acceuil';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Traitement from './pages/traitement';
+import Profil from './pages/profil';
+
 
 
 
@@ -25,7 +27,8 @@ function App() {
         <Route path="/prediction" element={<Prediction />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/traitement" element={<Traitement />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profil" element={<Profil />} />
+
       </Routes>
     </BrowserRouter>
   );
