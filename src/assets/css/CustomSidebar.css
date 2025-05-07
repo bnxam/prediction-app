@@ -15,7 +15,9 @@ html, body {
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background-color: #DFC57B;
+    /* background-color: #DFC57B;
+    color: #ECDCAB; */
+    background-color: #5C7285;
     color: #ECDCAB;
     position: relative;
     display: flex;
