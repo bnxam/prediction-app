@@ -139,6 +139,8 @@
 //ProfileInfo
 import React, { useRef, useState } from 'react';
 import PasswordModal from "./PasswordModal";
+import { Save, X } from "lucide-react";
+
 
 const ProfileInfo = ({ user }) => {
     const [profileImage, setProfileImage] = useState(user.photoUrl || '');
@@ -169,7 +171,7 @@ const ProfileInfo = ({ user }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col space-y-6 w-full max-w-4xl mx-auto">
+        <div className="bg-[#FFFDF0] p-6 rounded-2xl shadow-xl flex flex-col space-y-6 w-full max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center md:items-start md:space-x-10">
                 {/* Photo de profil */}
                 <div className="relative w-32 h-32 md:w-36 md:h-36">
@@ -219,17 +221,15 @@ const ProfileInfo = ({ user }) => {
             <div className="flex flex-col md:flex-row justify-center gap-4 pt-4">
                 {isEditing ? (
                     <>
-                        <button
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
-                            onClick={toggleEdit}
-                        >
-                            💾 Enregistrer
+
+                    <button onClick={toggleEdit} className="flex items-center gap-2 bg-[#96CEB4] hover:bg-[#FFA62F] text-white font-semibold px-5 py-2 rounded-lg">
+                            <Save className="w-5 h-5" />
+                            Enregistrer
                         </button>
-                        <button
-                            className="bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
-                            onClick={cancelEdit}
-                        >
-                            ❌ Annuler
+
+                        <button onClick={cancelEdit} className="flex items-center gap-2 bg-[#af2323] hover:bg-[#A31D1D] text-white font-semibold px-5 py-2 rounded-lg">
+                            <X className="w-5 h-5" />
+                            Annuler
                         </button>
                     </>
                 ) : (
