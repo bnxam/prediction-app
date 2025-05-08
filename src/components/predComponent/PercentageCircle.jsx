@@ -21,7 +21,7 @@ const PercentageCircle = ({ percentage }) => {
                         cy={radius}
                     />
                     <circle
-                        stroke="#9ab87a"
+                        stroke="#BF9264"
                         fill="transparent"
                         strokeWidth={stroke}
                         strokeLinecap="square"
