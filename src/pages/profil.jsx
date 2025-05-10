@@ -14,16 +14,12 @@ export default function Profil() {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
-            {/* Sidebar fixe à gauche avec largeur bien définie */}
-            <div className="fixed top-0 left-0 h-full w-64 z-50 bg-white shadow-md">
-                <ProSidebarProvider>
-                    <CustomSidebar />
-                </ProSidebarProvider>
-            </div>
 
-            {/* Contenu principal avec un décalage à droite de la largeur de la sidebar */}
-            <main className="ml-64 w-full p-4 sm:p-8 space-y-8">
+        <div className="flex h-screen bg-gray-70">
+            <ProSidebarProvider>
+                <CustomSidebar />
+            </ProSidebarProvider>
+            <div className="flex-1 p-8 overflow-auto">
                 <ProfileInfo user={user} />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -37,7 +33,7 @@ export default function Profil() {
                         <UserBio />
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }
