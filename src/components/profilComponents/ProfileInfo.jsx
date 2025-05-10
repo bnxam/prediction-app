@@ -171,7 +171,7 @@ const ProfileInfo = ({ user }) => {
     };
 
     return (
-        <div className="bg-[#FFFDF0] p-6 rounded-2xl shadow-xl flex flex-col space-y-6 w-full max-w-4xl mx-auto">
+        <div className="bg-[#f4f2f2] p-6 rounded-2xl shadow-xl flex flex-col space-y-6 w-full max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center md:items-start md:space-x-10">
                 {/* Photo de profil */}
                 <div className="relative w-32 h-32 md:w-36 md:h-36">
@@ -222,19 +222,19 @@ const ProfileInfo = ({ user }) => {
                 {isEditing ? (
                     <>
 
-                    <button onClick={toggleEdit} className="flex items-center gap-2 bg-[#96CEB4] hover:bg-[#FFA62F] text-white font-semibold px-5 py-2 rounded-lg">
+                    <button onClick={toggleEdit} className="flex items-center gap-2 bg-[#493D9E] hover:bg-[#493D9E] text-white font-semibold px-5 py-2 rounded-lg">
                             <Save className="w-5 h-5" />
                             Enregistrer
                         </button>
 
-                        <button onClick={cancelEdit} className="flex items-center gap-2 bg-[#af2323] hover:bg-[#A31D1D] text-white font-semibold px-5 py-2 rounded-lg">
+                        <button onClick={cancelEdit} className="flex items-center gap-2 bg-[#A31D1D] hover:bg-[#A31D1D] text-white font-semibold px-5 py-2 rounded-lg">
                             <X className="w-5 h-5" />
                             Annuler
                         </button>
                     </>
                 ) : (
                     <button
-                        className="bg-[#219EBC] hover:bg-[#219EBC]/90 text-white font-semibold px-6 py-2 rounded-lg shadow transition"
+                        className="bg-[#632268] hover:bg-[#632268]/90 text-white font-semibold px-6 py-2 rounded-lg shadow transition"
                         onClick={toggleEdit}
                     >
                         ✏️ Modifier mes informations
