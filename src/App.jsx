@@ -18,6 +18,7 @@ import Profil from './pages/profil';
 
 
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -28,7 +29,6 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/traitement" element={<Traitement />} />
         <Route path="/profil" element={<Profil />} />
-
       </Routes>
     </BrowserRouter>
   );
