@@ -55,7 +55,15 @@
 
 from fastapi import FastAPI
 from app.routers import users
+from app.database import engine
+from app.models import user
 
+# Création des tables
+user.Base.metadata.create_all(bind=engine)
+
+# Instance FastAPI
 app = FastAPI()
 
+# Inclusion des routes
 app.include_router(users.router)
+
