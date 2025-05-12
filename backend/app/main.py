@@ -60,7 +60,6 @@ from app.models import user
 
 # Création des tables
 user.Base.metadata.create_all(bind=engine)
-
 # Instance FastAPI
 app = FastAPI()
 
