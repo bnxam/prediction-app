@@ -1,0 +1,51 @@
+import React from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Area,
+} from 'recharts';
+
+const Graphique = ({ data, minDomain, chartRef }) => {
+  return (
+    <div ref={chartRef} className="w-full h-full">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <defs>
+            <linearGradient id="colorValeur" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="datetime" />
+          <YAxis domain={[minDomain, 'auto']} />
+          <Tooltip />
+
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#8884d8"
+            activeDot={{ r: 8 }}
+            strokeWidth={2}
+            dot={false}
+          />
+
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="none"
+            fill="url(#colorValeur)"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default Graphique;
