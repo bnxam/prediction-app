@@ -1,8 +1,47 @@
-import React , { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function ModalSarima({ onClose }) {
   const [period, setPeriod] = useState('');
   const [file, setFile] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  // // const [selectedMethod, setSelectedMethod] = useState('');
+  // const [predictionPeriod, setPredictionPeriod] = useState('');
+  // const [fileFormat, setFileFormat] = useState('');
+  const [showModel, setShowModel] = useState(false);
+
+
+  const handleValidate = async () => {
+    const formData = new FormData();
+    // formData.append("type_modele", selectedMethod);
+    formData.append("periode", period);
+    if (file) {
+      formData.append("fichier", file);
+      console.log(file)
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Échecccccc de la prédiction");
+      }
+
+      const data = await response.json();
+      console.log("Réponse du serveur :", data);
+      alert("Prédiction lancée avec succès !");
+
+      // Tu peux aussi stocker la prédiction reçue ou l'afficher
+      // setPredictionResult(data);
+
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+      alert("Une erreur est survenue lors de la prédiction.");
+    }
+  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,6 +89,7 @@ export default function ModalSarima({ onClose }) {
             <button
               type="submit"
               className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              onClick={handleValidate}
             >
               Lancer la prédiction
             </button>
