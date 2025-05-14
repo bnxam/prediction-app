@@ -5,3 +5,5 @@ psycopg2-binary
 python-dotenv
 passlib[bcrypt]
 pydantic[email]
+statsmodels
+python-multipart
