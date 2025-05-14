@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function ModalSarima({ onClose }) {
+export default function ModalSarima({ onClose, onPredictionDone  }) {
   const [period, setPeriod] = useState('');
   const [file, setFile] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -32,6 +32,7 @@ export default function ModalSarima({ onClose }) {
       const data = await response.json();
       console.log("Réponse du serveur :", data);
       alert("Prédiction lancée avec succès !");
+      onPredictionDone();
 
       // Tu peux aussi stocker la prédiction reçue ou l'afficher
       // setPredictionResult(data);

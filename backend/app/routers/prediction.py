@@ -114,6 +114,7 @@ warnings.filterwarnings("ignore")
 
 @router.post("/predict")
 async def lancer_prediction(periode: int = Form(...), fichier: UploadFile = File(...)):
+    global last_prediction_result
     try:
         # Lire le contenu du fichier CSV
         contents = await fichier.read()
@@ -165,7 +166,7 @@ async def lancer_prediction(periode: int = Form(...), fichier: UploadFile = File
         else:
             mape = None  # Pas assez de données pour MAPE
 
-        return JSONResponse(content={
+        last_prediction_result ={
             "message": "Prédiction SARIMA effectuée avec succès",
             "meilleurs_parametres": {
                 "order": best_params[0],
@@ -178,9 +179,20 @@ async def lancer_prediction(periode: int = Form(...), fichier: UploadFile = File
             "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
             "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
             "valeurs": forecast.tolist()
-        })
+        }
+    
+        return JSONResponse(content=last_prediction_result)
+
 
     except Exception as e:
         return JSONResponse(status_code=500, content={
             "message": f"Erreur lors de la prédiction : {str(e)}"
         })
+
+
+@router.get("/last_prediction")
+async def get_last_prediction():
+    if last_prediction_result:
+        return JSONResponse(content=last_prediction_result)
+    else:
+        return JSONResponse(status_code=404, content={"message": "Aucune prédiction disponible pour le moment."})
