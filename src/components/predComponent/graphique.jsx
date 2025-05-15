@@ -1,4 +1,4 @@
-import React from 'react';
+import React , {useState , useRef} from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -12,7 +12,7 @@ import {
 
 const Graphique = ({ data, minDomain, chartRef }) => {
   return (
-    <div ref={chartRef} className="w-full h-full">
+    <div ref={chartRef} className="w-full h-full" >
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
           <defs>
@@ -23,13 +23,13 @@ const Graphique = ({ data, minDomain, chartRef }) => {
           </defs>
 
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="datetime" />
+          <XAxis dataKey="Date" />
           <YAxis domain={[minDomain, 'auto']} />
           <Tooltip />
 
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="Valeur"
             stroke="#8884d8"
             activeDot={{ r: 8 }}
             strokeWidth={2}
@@ -38,7 +38,7 @@ const Graphique = ({ data, minDomain, chartRef }) => {
 
           <Area
             type="monotone"
-            dataKey="value"
+            dataKey="Valeur"
             stroke="none"
             fill="url(#colorValeur)"
           />
