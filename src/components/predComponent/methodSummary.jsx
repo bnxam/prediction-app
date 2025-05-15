@@ -13,7 +13,7 @@ const MethodSummary = () => {
         <h3 className="text-base md:text-lg font-bold mb-1 md:mb-2">Paramètres</h3>
         <p className="text-sm md:text-gray-600">lr=0.001, epochs=50</p>
       </div>
-      <div className=" bg-[#C4E1F6] border-2 border-[#8fc9c7] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center text-center">
+      <div className=" bg-[#C4E1F6] border-2 border-[#86bfe8] p-4 md:p-6 rounded-sm shadow-md hover:shadow-lg transition duration-300 hover:scale-105 flex-1 flex flex-col items-center justify-center text-center">
         <h3 className="text-base md:text-lg font-bold mb-1 md:mb-2">Période prédite </h3>
         <p className="text-sm md:text-gray-600">25-12-2004 , 28-12-2004</p>
       </div>
