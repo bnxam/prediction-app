@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef} from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Area } from 'recharts';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
