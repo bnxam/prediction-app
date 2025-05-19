@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 
-export default function ModalSarima({ onClose, onPredictionDone  }) {
+export default function ModalSarima({ onClose , onPredictionDone }) {
   const [period, setPeriod] = useState('');
   const [file, setFile] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  // // const [selectedMethod, setSelectedMethod] = useState('');
-  // const [predictionPeriod, setPredictionPeriod] = useState('');
-  // const [fileFormat, setFileFormat] = useState('');
-  const [showModel, setShowModel] = useState(false);
-
 
   const handleValidate = async () => {
     const formData = new FormData();
@@ -18,6 +12,7 @@ export default function ModalSarima({ onClose, onPredictionDone  }) {
       formData.append("fichier", file);
       console.log(file)
     }
+    formData.append("type_modele", "sarima");
 
     try {
       const response = await fetch("http://localhost:8000/predict", {
@@ -33,6 +28,7 @@ export default function ModalSarima({ onClose, onPredictionDone  }) {
       console.log("Réponse du serveur :", data);
       alert("Prédiction lancée avec succès !");
       onPredictionDone();
+      onClose();
 
       // Tu peux aussi stocker la prédiction reçue ou l'afficher
       // setPredictionResult(data);
@@ -57,7 +53,7 @@ export default function ModalSarima({ onClose, onPredictionDone  }) {
         <h2 className="text-lg font-semibold mb-4">Créer une prédiction avec SARIMA</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Période de prédiction (en jours)</label>
             <input
               type="number"
@@ -66,6 +62,22 @@ export default function ModalSarima({ onClose, onPredictionDone  }) {
               required
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
             />
+          </div> */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Période de prédiction
+            </label>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              required
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="">-- Sélectionnez une période --</option>
+              <option value={30}>Mois (30 jours)</option>
+              <option value={90}>Trimestre (90 jours)</option>
+              <option value={365}>Année (365 jours)</option>
+            </select>
           </div>
 
           <div>
