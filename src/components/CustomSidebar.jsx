@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar as ProSidebar, Menu, MenuItem, useProSidebar } from 'react-pro-sidebar';
-import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine } from 'react-icons/fa';
+import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine, FaPeopleArrows, FaPersonBooth } from 'react-icons/fa';
 import LogoProfil from '../assets/images/portrait.jpg';
 import '../assets/css/CustomSidebar.css';
 import { Link, useLocation } from 'react-router-dom';
+import { FaArrowsDownToPeople, FaPeopleGroup, FaPeoplePulling, FaPeopleRobbery, FaPerson, FaPersonBurst, FaPersonChalkboard, FaPersonCircleCheck, FaPersonCircleMinus } from 'react-icons/fa6';
 
 function CustomSidebar() {
   const { collapseSidebar } = useProSidebar();
@@ -35,6 +36,7 @@ function CustomSidebar() {
   const menuItems = [
     { path: '/profil', icon: <img src={LogoProfil} alt="Profil" style={{ width: '25px', height: '25px', borderRadius: '50%' }} />, label: 'Profil' },
     { path: '/dashboard', icon: <FaHome />, label: 'Dashboard' },
+    { path: '/client', icon: <FaPeopleGroup />, label: 'Clients' },
     { path: '/prediction', icon: <FaChartLine />, label: 'Prédiction' },
     { path: '/traitement', icon: <FaCog />, label: 'Traitement' },
     { path: '/historique', icon: <FaClock />, label: 'Historique' },

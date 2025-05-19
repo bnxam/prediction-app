@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Traitement from './pages/traitement';
 import Profil from './pages/profil';
+import Client from './pages/Clients';
 
 
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/traitement" element={<Traitement />} />
         <Route path="/profil" element={<Profil />} />
+        <Route path="/Client" element={<Client/>} />
       </Routes>
     </BrowserRouter>
   );
