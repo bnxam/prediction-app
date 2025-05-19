@@ -1,15 +1,15 @@
-import React ,{ useState} from 'react';
+import React, { useState } from 'react';
 
-const Tableau = ({data}) => {
-
-    const [selectedDate, setSelectedDate] = useState('');
+const Tableau = ({ data }) => {
+  const [selectedDate, setSelectedDate] = useState('');
 
   const filteredData = selectedDate
     ? data.filter((row) => {
-      const rowDate = new Date(row.datetime).toISOString().split('T')[0];
-      return rowDate === selectedDate;
-    })
+        const rowDate = new Date(row?.datetime).toISOString().split('T')[0];
+        return rowDate === selectedDate;
+      })
     : data;
+
   return (
     <div className="bg-[#fffde9] rounded-l shadow-md border border-[#e6dea9] overflow-hidden">
       {/* Barre de recherche */}
@@ -46,16 +46,18 @@ const Tableau = ({data}) => {
             {filteredData.map((row, index) => (
               <tr key={index} className="bg-[#fffcd6] hover:bg-[#fdf8c4]">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#5b5028]">
-                  {new Date(row.datetime).toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {row?.datetime
+                    ? new Date(row.datetime).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : 'Date inconnue'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[#7a6f39] font-semibold">
-                  {row.value.toLocaleString('fr-FR')}
+                  {typeof row?.value === 'number' ? row.value.toLocaleString('fr-FR') : 'Valeur inconnue'}
                 </td>
               </tr>
             ))}

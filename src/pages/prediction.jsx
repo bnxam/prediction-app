@@ -4,7 +4,6 @@ import PredBar from '../components/predComponent/predBar';
 // import NewPredictionButton from '../components/predComponent/newPredictionButton';
 import GrapheSection from '../components/predComponent/grapheSection';
 // import GrapheAction from '../components/predComponent/grapheAction';
-import MethodSummary from '../components/predComponent/methodSummary';
 import PredictionResults from '../components/predComponent/predictionResults';
 import CustomSidebar from '../components/CustomSidebar';
 import { ProSidebarProvider } from 'react-pro-sidebar';
@@ -23,7 +22,7 @@ const Prediction = () => {
 
 
         {/* <NewPredictionButton/>   */}
-        <MethodSummary />
+        
         <GrapheSection />
         {/* <GrapheAction/> */}
 

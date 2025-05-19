@@ -6,6 +6,7 @@ import Graphique from './graphique';
 import Tableau from './tableau';
 import ModalSarima from './modalSarima';
 import ModalArima from './modalArima';
+import MethodSummary from './methodSummary';
 
 const GrapheSection = () => {
   const [predictionDone, setPredictionDone] = useState(false);
@@ -13,22 +14,23 @@ const GrapheSection = () => {
   const [showModal, setShowModal] = useState(false);
 
   const handleModelChange = (e) => {
-  const model = e.target.value;
-  setSelectedModel(model);
-  if (model) {
-    setShowModal(true);
-  } else {
-    setShowModal(false);
-  }
-};
+    const model = e.target.value;
+    setSelectedModel(model);
+    if (model) {
+      setShowModal(true);
+    } else {
+      setShowModal(false);
+    }
+  };
 
-  // const handleModelChange = (e) => {
-  //   const value = e.target.value;
-  //   setSelectedModel(value);
-  //   if (value === 'sarima') {
-  //     setShowModal(true);
-  //   }
-  // };
+  const [metaInfo, setMetaInfo] = useState({
+    dateDebut: null,
+    dateFin: null,
+    methode: "",
+    mape: "",
+    params: {},
+    criteresInfo: {}
+  });
   const [data, setData] = useState([]);
   const chartRef = useRef(null);
 
@@ -45,6 +47,18 @@ const GrapheSection = () => {
           }));
 
           setData(combined);
+
+          setMetaInfo({
+            methode: json.methode,
+            dateDebut: json.dates[0],
+            debut: json.dates_predit?.debut,
+            fin: json.dates_predit?.fin,
+            mape: json.taux_erreur_mape,
+            params: json.meilleurs_parametres,
+            criteresInfo: json.criteres_information
+          });
+          setPredictionDone(true);
+
         } else {
           console.warn("Aucune donnée de prédiction trouvée.");
         }
@@ -55,7 +69,6 @@ const GrapheSection = () => {
 
     if (predictionDone) {
       fetchData();
-      setPredictionDone(false); // pour éviter de boucler
     }
   }, [predictionDone]);
 
@@ -111,7 +124,7 @@ const GrapheSection = () => {
     }
   };
 
-  
+
 
   const minValue = Math.min(...data.map(item => item.value));
   // Optionnel: Ajouter une marge en dessous de la valeur minimale
@@ -120,38 +133,36 @@ const GrapheSection = () => {
 
   return (
     <>
+      {predictionDone && <><MethodSummary metaInfo={metaInfo} />
 
+        <div className="bg-white p-6 rounded-l shadow-md w-full mb-8  mt-8 flex flex-col">
 
-      <div className="bg-white p-6 rounded-l shadow-md w-full mb-8  mt-8 flex flex-col">
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full">
-          <div>
-            {/* <h2 className="text-2xl font-bold mb-2 text-blue-950">Graphique de Prédiction</h2> */}
-            {/* <p className="text-gray-500">Visualisez vos résultats ici.</p> */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full">
+            <div>
+              {/* <h2 className="text-2xl font-bold mb-2 text-blue-950">Graphique de Prédiction</h2> */}
+              {/* <p className="text-gray-500">Visualisez vos résultats ici.</p> */}
+            </div>
           </div>
+
+          {/* Partie affichage : Graphique ou Tableau */}
+          <div ref={chartRef} className="mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
+            {displayMode === 'graph' ? (
+
+              <Graphique data={data} minDomain={minDomain} chartRef={chartRef} />
+            ) : (
+
+              <Tableau data={data} />
+            )}
+          </div>
+
         </div>
+      </>
 
-        {/* Partie affichage : Graphique ou Tableau */}
-        <div ref={chartRef} className="mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
-          {displayMode === 'graph' ? (
-
-            <Graphique data={data} minDomain={minDomain} chartRef={chartRef} />
-          ) : (
-
-            <Tableau data={data} />
-
-
-          )}
-        </div>
-
-
-
-
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 mt-5">
+      }
+      <div className="flex flex-col md:flex-row gap-4 mb-6 mt-5">
         {/* Format d'affichage */}
-        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        {predictionDone &&
+        <div className="bg-white p-4 rounded-l flex-1 flex flex-col shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Format d'affichage</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
@@ -162,9 +173,9 @@ const GrapheSection = () => {
             <option value="table">Tableau</option>
           </select>
         </div>
-
+}
         {/* Méthode de prédiction */}
-        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        <div className="bg-white p-4 rounded-l shadow-md flex-1 flex flex-col border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Créer une prédiction</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
@@ -181,13 +192,14 @@ const GrapheSection = () => {
               onPredictionDone={() => setPredictionDone(true)} />
           )}
           {showModal && selectedModel === "arima" && (
-            <ModalArima onClose={() => setShowModal(false)} 
+            <ModalArima onClose={() => setShowModal(false)}
               onPredictionDone={() => setPredictionDone(true)} />
           )}
         </div>
 
         {/* Format de Téléchargement */}
-        <div className="bg-white p-4 rounded-l shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+        {predictionDone &&
+        <div className="bg-white p-4 rounded-l flex-1 flex flex-col shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Format de téléchargement</h5>
           <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700 transition-colors"
@@ -215,11 +227,7 @@ const GrapheSection = () => {
           </button>
         </div>
 
-
-        {/* partie du graphe */}
-
-
-
+            }
       </div>
     </>
 
