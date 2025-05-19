@@ -25,7 +25,6 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
             contents = await fichier.read()
             df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
-        
             df["Date"] = pd.to_datetime(df["Date"])
             df = df.sort_values("Date")
 
@@ -90,7 +89,11 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
                 },
                 "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
                 "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
-                "valeurs": forecast.tolist()
+                "valeurs": forecast.tolist(),
+                "donnees_historiques": {
+                    "dates": df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+                    "valeurs": df["Valeur"].tolist()
+            }
             }
         
             return JSONResponse(content=last_prediction_result)
@@ -164,12 +167,18 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
                     "BIC": round(best_results.bic, 2)
                 },
                 "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+                "datesp": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
+                "valeursp": forecast.tolist(),  # valeurs prédites
                 "dates": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
                 "valeurs": forecast.tolist(),  # valeurs prédites
                 "dates_predit": {
                     "debut": forecast_dates[0].strftime("%Y-%m-%d"),
                     "fin": forecast_dates[-1].strftime("%Y-%m-%d")
                 },
+                "donnees_historiques": {
+                    "dates": df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+                    "valeurs": df["Valeur"].tolist()
+            }
             }
             import logging
             logging.info("Résultat de prédiction asmaaaa d zela: %s", last_prediction_result)

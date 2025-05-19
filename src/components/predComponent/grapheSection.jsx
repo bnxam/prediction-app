@@ -40,11 +40,24 @@ const GrapheSection = () => {
         const res = await fetch('http://localhost:8000/last_prediction');
         const json = await res.json();
 
-        if (json.dates && json.valeurs) {
-          const combined = json.dates.map((date, index) => ({
+       if (json.dates && json.valeurs) {
+          // Créer un tableau combiné pour les prédictions
+          const predictions = json.dates.map((date, index) => ({
             Date: date,
             Valeur: json.valeurs[index],
+            Type: 'prediction' // Pour distinguer les prédictions
           }));
+
+          // Créer un tableau combiné pour les données historiques si elles existent
+          const historique = json.donnees_historiques ? 
+            json.donnees_historiques.dates.map((date, index) => ({
+              Date: date,
+              Valeur: json.donnees_historiques.valeurs[index],
+              Type: 'historique' // Pour distinguer les données historiques
+            })) : [];
+
+          // Combiner les deux tableaux (historique + prédictions)
+          const combined = [...historique, ...predictions];
 
           setData(combined);
 
