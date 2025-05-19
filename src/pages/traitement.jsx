@@ -16,7 +16,7 @@ const Traitement = () => {
 
             <div className="flex-1 p-8 overflow-auto">
                 
-                <MethodSummary />
+                {/* <MethodSummary /> */}
                 {/* Contenu principal avec le graphique */}
                 <FormParametres/>
                 <Graphe />
