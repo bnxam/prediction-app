@@ -289,7 +289,7 @@ const ProfileInfo = ({ user }) => {
     };
 
     return (
-        <div className="bg-[#ffe3ad] p-8 rounded-2xl shadow-xl border-2 border-[#5C7285] w-full  mx-auto">
+        <div className="bg-[#f2f9ff] p-8 rounded-2xl shadow-xl border-2 border-[#5C7285] w-full  mx-auto">
             {/* Header avec titre */}
             <div className="mb-8 text-center md:text-left">
                 <h2 className="text-2xl font-bold text-gray-800">Mon Profil</h2>

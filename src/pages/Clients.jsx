@@ -249,7 +249,7 @@ const Clients = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-70">
+        <div className="flex h-screen bg-gray-100">
             <ProSidebarProvider>
                 <CustomSidebar />
             </ProSidebarProvider>

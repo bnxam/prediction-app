@@ -13,8 +13,10 @@ import Acceuil from './pages/acceuil';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Traitement from './pages/traitement';
-import Profil from './pages/profil';
 import Client from './pages/Clients';
+import Profil from './pages/profil';
+import ProfilClient from './pages/ProfilClient';
+import DashboardClient from './pages/DashboardClient';
 
 
 
@@ -31,6 +33,8 @@ function App() {
         <Route path="/traitement" element={<Traitement />} />
         <Route path="/profil" element={<Profil />} />
         <Route path="/Client" element={<Client/>} />
+        <Route path="/profilclient" element={<ProfilClient/>} />
+        <Route path="/dashboardclient" element={<DashboardClient/>} />
       </Routes>
     </BrowserRouter>
   );

@@ -42,22 +42,22 @@ const GrapheSection = () => {
 
        if (json.dates && json.valeurs) {
           // Créer un tableau combiné pour les prédictions
-          const predictions = json.dates.map((date, index) => ({
+          const combined = json.dates.map((date, index) => ({
             Date: date,
             Valeur: json.valeurs[index],
             Type: 'prediction' // Pour distinguer les prédictions
           }));
 
           // Créer un tableau combiné pour les données historiques si elles existent
-          const historique = json.donnees_historiques ? 
-            json.donnees_historiques.dates.map((date, index) => ({
-              Date: date,
-              Valeur: json.donnees_historiques.valeurs[index],
-              Type: 'historique' // Pour distinguer les données historiques
-            })) : [];
+          // const historique = json.donnees_historiques ? 
+          //   json.donnees_historiques.dates.map((date, index) => ({
+          //     Date: date,
+          //     Valeur: json.donnees_historiques.valeurs[index],
+          //     Type: 'historique' // Pour distinguer les données historiques
+          //   })) : [];
 
           // Combiner les deux tableaux (historique + prédictions)
-          const combined = [...historique, ...predictions];
+          // const combined = [...historique, ...predictions];
 
           setData(combined);
 
