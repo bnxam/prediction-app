@@ -15,6 +15,9 @@ const MethodSummary = ({ metaInfo }) => {
         {metaInfo.methode === "ARIMA" && metaInfo.params?.order && (
           <p className="text-sm text-gray-600">(p,d,q) = {metaInfo.params?.order?.join(', ')}</p>
         )}
+        {metaInfo.methode === "LSTM" && metaInfo.params?.order && (
+          <p className="text-sm text-gray-600">hello there </p>
+        )}
 
         {metaInfo.methode === "SARIMA" && metaInfo.params?.order && metaInfo.params?.seasonal_order && (
           <>

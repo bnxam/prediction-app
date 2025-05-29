@@ -6,6 +6,7 @@ import Graphique from './graphique';
 import Tableau from './tableau';
 import ModalSarima from './modalSarima';
 import ModalArima from './modalArima';
+import ModalLSTM from './modalLSTM';
 import MethodSummary from './methodSummary';
 
 const GrapheSection = () => {
@@ -42,22 +43,28 @@ const GrapheSection = () => {
 
        if (json.dates && json.valeurs) {
           // Créer un tableau combiné pour les prédictions
-          const predictions = json.dates.map((date, index) => ({
+          // const predictions = json.dates.map((date, index) => ({
+          //   Date: date,
+          //   Valeur: json.valeurs[index],
+          //   Type: 'prediction' // Pour distinguer les prédictions
+          // }));
+
+          // // Créer un tableau combiné pour les données historiques si elles existent
+          // // const historique = json.donnees_historiques ? 
+          // //   json.donnees_historiques.dates.map((date, index) => ({
+          // //     Date: date,
+          // //     Valeur: json.donnees_historiques.valeurs[index],
+          // //     Type: 'historique' // Pour distinguer les données historiques
+          // //   })) : [];
+
+          // // Combiner les deux tableaux (historique + prédictions)
+          // const combined = [...historique, ...predictions];
+
+          const combined = json.dates.map((date, index) => ({
             Date: date,
             Valeur: json.valeurs[index],
             Type: 'prediction' // Pour distinguer les prédictions
           }));
-
-          // Créer un tableau combiné pour les données historiques si elles existent
-          const historique = json.donnees_historiques ? 
-            json.donnees_historiques.dates.map((date, index) => ({
-              Date: date,
-              Valeur: json.donnees_historiques.valeurs[index],
-              Type: 'historique' // Pour distinguer les données historiques
-            })) : [];
-
-          // Combiner les deux tableaux (historique + prédictions)
-          const combined = [...historique, ...predictions];
 
           setData(combined);
 
@@ -66,9 +73,14 @@ const GrapheSection = () => {
             dateDebut: json.dates[0],
             debut: json.dates_predit?.debut,
             fin: json.dates_predit?.fin,
-            mape: json.taux_erreur_mape,
-            params: json.meilleurs_parametres,
-            criteresInfo: json.criteres_information
+            mape: json.taux_erreur_mape ?? json.performance?.taux_erreur_mape ?? null,
+            params: json.meilleurs_parametres ?? json.architecture ?? null,
+            criteresInfo: json.criteres_information ?? {
+              ...(json.performance && {
+                loss: json.performance.loss,
+                val_loss: json.performance.val_loss
+              })
+            }
           });
           setPredictionDone(true);
 
@@ -199,6 +211,11 @@ const GrapheSection = () => {
             <option value="sarima">SARIMA</option>
             <option value="arima">ARIMA</option>
           </select>
+
+          {showModal && selectedModel === "lstm" && (
+            <ModalLSTM onClose={() => setShowModal(false)}
+              onPredictionDone={() => setPredictionDone(true)} />
+          )}
 
           {showModal && selectedModel === "sarima" && (
             <ModalSarima onClose={() => setShowModal(false)}
