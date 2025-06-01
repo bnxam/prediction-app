@@ -214,8 +214,8 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
             model.compile(optimizer='adam', loss='mean_squared_error')
             history = model.fit(
                 X_train, y_train,
-                epochs=1000,  # Large marge (EarlyStopping gère l'arrêt)
-                batch_size=32,  # Ni trop petit ni trop grand
+                epochs=25,  # Large marge (EarlyStopping gère l'arrêt)
+                batch_size=12,  # Ni trop petit ni trop grand
                 validation_data=(X_test, y_test),
                 callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)],
                 verbose=1

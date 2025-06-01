@@ -1,114 +1,150 @@
-import React, { useState } from 'react';
+// import React from 'react';
+// import {
+//   ResponsiveContainer,
+//   LineChart,
+//   Line,
+//   XAxis,
+//   YAxis,
+//   Tooltip,
+//   CartesianGrid,
+//   Area,
+//   Legend,
+// } from 'recharts';
 
-export default function ModalArima({ onClose, onPredictionDone }) {
-  const [period, setPeriod] = useState('');
-  const [file, setFile] = useState(null);
+// export default function GeneralGraphesection({ data, minDomain, chartRef }) {
 
-  const handleValidate = async () => {
-    const formData = new FormData();
-    // formData.append("type_modele", selectedMethod);
-    formData.append("periode", period);
-    if (file) {
-      formData.append("fichier", file);
-      console.log(file)
-    }
-    formData.append("type_modele", "arima");
 
-    try {
-      const response = await fetch("http://localhost:8000/predict", {
-        method: "POST",
-        body: formData,
-      });
 
-      if (!response.ok) {
-        throw new Error("Échecccccc de la prédiction");
+//   // Séparer les données historiques et les prédictions
+//   const historicalData = data.filter(item => item.Type === 'historique');
+//   const predictionData = data.filter(item => item.Type === 'prediction');
+//   console.log(predictionData)
+//   return (
+//     <div ref={chartRef} className="w-full h-full">
+//       <ResponsiveContainer width="100%" height={300}>
+//         <LineChart>
+//           <CartesianGrid strokeDasharray="3 3" />
+//           <XAxis dataKey="Date" tickFormatter={(date) => new Date(date).toLocaleDateString()} />
+//           <YAxis domain={[minDomain, 'auto']} />
+//           <Tooltip />
+//           <Legend />
+
+//           {/* Historique */}
+//           <Line
+//             data={historicalData}
+//             dataKey="Valeur"
+//             stroke="#8884d8"
+//             name="Historique"
+//             dot={false}
+//             isAnimationActive={false}
+//           />
+//           <Area
+//             data={historicalData}
+//             dataKey="Valeur"
+//             fill="url(#colorHistorique)"
+//             stroke="none"
+//             fillOpacity={0.4}
+//             isAnimationActive={false}
+//           />
+
+//           {/* Prédiction */}
+//           {predictionData.length > 0 && (
+//             <>
+//               <Line
+//                 data={predictionData}
+//                 dataKey="Valeur"
+//                 stroke="#ff7300"
+//                 strokeDasharray="5 5"
+//                 name="Prédiction"
+//                 dot={false}
+//                 isAnimationActive={false}
+//               />
+//               <Area
+//                 data={predictionData}
+//                 dataKey="Valeur"
+//                 fill="url(#colorPrediction)"
+//                 stroke="none"
+//                 fillOpacity={0.4}
+//                 isAnimationActive={false}
+//               />
+//             </>
+//           )}
+//         </LineChart>
+//       </ResponsiveContainer>
+
+//     </div>
+//   );
+// }
+import React from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend
+} from 'recharts';
+
+export default function GeneralGraphesection({ data = [], chartRef }) {
+  // Fusionner les données dans une seule structure
+  const allData = [];
+
+  data.forEach((item) => {
+    const existing = allData.find(d => d.Date === item.Date);
+
+    if (existing) {
+      if (item.Type === 'historique') {
+        existing.realValue = item.Valeur;
+      } else if (item.Type === 'prediction') {
+        existing.predictedValue = item.Valeur;
       }
-
-      const data = await response.json();
-      console.log("Réponse du serveur :", data);
-      alert("Prédiction lancée avec succès !");
-      onPredictionDone();
-      onClose();
-
-      // Tu peux aussi stocker la prédiction reçue ou l'afficher
-      // setPredictionResult(data);
-
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-      alert("Une erreur est survenue lors de la prédiction.");
+    } else {
+      allData.push({
+        Date: item.Date,
+        realValue: item.Type === 'historique' ? item.Valeur : null,
+        predictedValue: item.Type === 'prediction' ? item.Valeur : null,
+      });
     }
-  };
-
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Période:', period);
-    console.log('Fichier importé:', file);
-    // Tu pourras déclencher l'appel à l'API ici plus tard
-  };
+  });
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-        <h2 className="text-lg font-semibold mb-4">Créer une prédiction avec ARIMA</h2>
+    <div ref={chartRef} className="w-full h-64 bg-white p-4 rounded shadow">
+      <h3 className="text-lg font-medium mb-2">Évolution mensuelle & Prédictions</h3>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={allData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" tickFormatter={(date) => new Date(date).toLocaleDateString()} />
+          <YAxis />
+          <Tooltip />
+          <Legend />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Période de prédiction (en jours)</label>
-            <input
-              type="number"
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
-            />
-          </div> */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Période de prédiction
-            </label>
-            <select
-              value={period}
-              onChange={(e) => setPeriod(Number(e.target.value))}
-              required
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
-            >
-              <option value="">-- Sélectionnez une période --</option>
-              <option value={30}>Mois (30 jours)</option>
-              <option value={90}>Trimestre (90 jours)</option>
-              <option value={365}>Année (365 jours)</option>
-            </select>
-          </div>
+          {/* Données réelles */}
+          <Line
+            type="monotone"
+            dataKey="realValue"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            // dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+            name="Données réelles"
+            connectNulls
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Importer un fichier CSV ou Excel</label>
-            <input
-              type="file"
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              onChange={(e) => setFile(e.target.files[0])}
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-              onClick={handleValidate}
-            >
-              Lancer la prédiction
-            </button>
-          </div>
-        </form>
-      </div>
+          {/* Prédictions */}
+          <Line
+            type="monotone"
+            dataKey="predictedValue"
+            stroke="#f97316"
+            strokeWidth={2}
+            // dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+            name="Prédictions"
+            connectNulls
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
