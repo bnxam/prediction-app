@@ -125,49 +125,55 @@
 #     modele_id = Column(Integer, ForeignKey("modeles.id"))
 #     modele = relationship("Modele", back_populates="sarimax")
 
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, func 
 from sqlalchemy.orm import relationship
 from ..database import Base
 
-class Utilisateur(Base):
-    __tablename__ = "utilisateurs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
+class Personne(Base):
+    __tablename__ = 'personne'
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String)
     mdp = Column(String)
+    note = Column(String)
+    pdp = Column(String)
 
-    admin = relationship("Admin", back_populates="utilisateur", uselist=False)
-    client = relationship("Client", back_populates="utilisateur", uselist=False)
+    type = Column(String)  # Discriminant
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'personne',
+        'polymorphic_on': type
+    }
 
 class Admin(Base):
-    __tablename__ = "admins"
+    __tablename__ = "admin"
 
-    idA = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, ForeignKey('personne.id'), primary_key=True)
     nom_entp = Column(String)
-    attribute5 = Column(Integer)
 
-    utilisateur_id = Column(Integer, ForeignKey("utilisateurs.id"))
-    utilisateur = relationship("Utilisateur", back_populates="admin")
+    __mapper_args__ = {
+        'polymorphic_identity': 'admin'
+    }
 
 
-class Client(Base):
-    __tablename__ = "clients"
+class User(Base):
+    __tablename__ = "users"
 
-    idC = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, ForeignKey('personne.id'), primary_key=True)
     code_client= Column(String, unique=True, index=True , nullable=False)
     nom = Column(String)
     prenom = Column(String)
     adresse = Column(String)
     date_naissance = Column(Date)
     telephone = Column(String)
+    typeC = Column(String)
 
-    utilisateur_id = Column(Integer, ForeignKey("utilisateurs.id"))
-    utilisateur = relationship("Utilisateur", back_populates="client")
+    __mapper_args__ = {
+        'polymorphic_identity': 'client'
+    }
 
     consommations = relationship("Consommation", back_populates="client")
-    predictions = relationship("Prediction", back_populates="client")
-    modeles = relationship("Model", back_populates="client")
 
 
 class Consommation(Base):
@@ -177,86 +183,91 @@ class Consommation(Base):
     valeur = Column(Float)
     date = Column(Date)
 
-    client_id = Column(Integer, ForeignKey("clients.id"))
-    client = relationship("Client", back_populates="consommations")
+    client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    client = relationship("User", back_populates="consommations")
 
 
 class Prediction(Base):
     __tablename__ = "predictions"
 
-    idP = Column(Integer, primary_key=True, index=True)
-    titre = Column(Integer)
+    id = Column(Integer, primary_key=True, index=True)
+    titre = Column(String)
     period = Column(Integer)
-    date_cree = Column(Date)
+    date_cree = Column(Date, default=func.current_date())
+    typeC = Column(String)
+    
+    modele_id = Column(Integer, ForeignKey("modeles.id"))
+    modele = relationship("Model", back_populates="predictions")
 
-    client_id = Column(Integer, ForeignKey("clients.id"))
-    client = relationship("Client", back_populates="predictions")
+    points = relationship("PointPredit", back_populates="prediction",cascade="all, delete-orphan")
 
-    points = relationship("PointPredit", back_populates="prediction", cascade="all, delete")
 
 
 class PointPredit(Base):
     __tablename__ = "points_predits"
 
-    idPP = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     dateP = Column(Date)
     valeur_predite = Column(Float)
-
-    prediction_id = Column(Integer, ForeignKey("predictions.idP"))
+    
+    prediction_id = Column(Integer, ForeignKey("predictions.id"), nullable=False)
     prediction = relationship("Prediction", back_populates="points")
 
 
 class Model(Base):
     __tablename__ = "modeles"
 
-    idM = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     mape = Column(Float)
-
-    client_id = Column(Integer, ForeignKey("clients.id"))
-    client = relationship("Client", back_populates="modeles")
-
-    modele_statique = relationship("ModeleStatique", back_populates="modele", uselist=False, cascade="all, delete")
-    modele_deep_learning = relationship("ModeleDeepLearning", back_populates="modele", uselist=False, cascade="all, delete")
-    sarima = relationship("Sarima", back_populates="modele", uselist=False, cascade="all, delete")
+    typeM = Column(String)
+    
+    predictions = relationship("Prediction", back_populates="modele", cascade="all, delete-orphan")
 
 
-class ModeleStatique(Base):
-    __tablename__ = "modeles_statiques"
+    __mapper_args__ = {
+        'polymorphic_identity': 'modele',
+        'polymorphic_on': typeM
+    }
 
-    idMC = Column(Integer, primary_key=True, index=True)
-    p = Column(Integer)
-    d = Column(Integer)
-    q = Column(Integer)
-
-    modele_id = Column(Integer, ForeignKey("modeles.idM"))
-    modele = relationship("Model", back_populates="modele_statique")
 
 
 class ModeleDeepLearning(Base):
     __tablename__ = "modeles_deep_learning"
 
-    idMM = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, ForeignKey('modeles.id'), primary_key=True)
     epochs = Column(Float)
     batch_size = Column(Integer)
     unitsC1 = Column(Integer)
     unitsC2 = Column(Integer)
     seq_length = Column(Integer)
 
-    modele_id = Column(Integer, ForeignKey("modeles.idM"))
-    modele = relationship("Model", back_populates="modele_deep_learning")
+    __mapper_args__ = {
+        'polymorphic_identity': 'deeplearning'
+    }
 
+class ModeleStatique(Base):
+    __tablename__ = "modeles_statiques"
 
-class Sarima(Base):
-    __tablename__ = "sarimas"
-
-    idS = Column(Integer, primary_key=True, index=True)
-    s = Column(Integer)
+    id = Column(Integer, ForeignKey('modeles.id'), primary_key=True)
     p = Column(Integer)
     d = Column(Integer)
     q = Column(Integer)
+
+    sarima = relationship("Sarima", uselist=False, backref="modele_statique")
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'arima'
+    }
+
+class Sarima(Base):
+    __tablename__ = "sarima"
+
+    id = Column(Integer, ForeignKey('modeles_statiques.id'), primary_key=True)
+    s = Column(Integer)
     P = Column(Integer)
     D = Column(Integer)
     Q = Column(Integer)
 
-    modele_id = Column(Integer, ForeignKey("modeles.idM"))
-    modele = relationship("Model", back_populates="sarima")
+    __mapper_args__ = {
+        'polymorphic_identity': 'sarima'
+    }

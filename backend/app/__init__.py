@@ -1,5 +1,4 @@
-# Rendre Base disponible au niveau du package
 from app.database import Base
-from app.models.user import User
+from app.models import *
 
-__all__ = ["Base", "User"]
+__all__ = ["Base", "Personne", "Admin", "User", "Consommation", "Prediction", "PointPredit", "Model", "ModeleDeepLearning", "ModeleStatique", "Sarima"]

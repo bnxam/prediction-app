@@ -8,3 +8,4 @@ pydantic[email]
 statsmodels
 python-multipart
 tensorflow
+alembic
