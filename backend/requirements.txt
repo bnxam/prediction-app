@@ -9,3 +9,4 @@ statsmodels
 python-multipart
 tensorflow
 alembic
+scikit-learn
