@@ -124,13 +124,12 @@
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
 from fastapi import FastAPI
-from app.routers import users, prediction, auth, admin
+from app.routers import users, prediction, auth
 from app.database import engine
 from app.models.user import Base
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-app.include_router(admin.router)
 
 # Création des tables
 Base.metadata.create_all(bind=engine)
@@ -155,7 +154,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth")  # Seulement cette ligne
 app.include_router(users.router)
 app.include_router(prediction.router)
-app.include_router(admin.router)
+# app.include_router(admin.router)
 
 
 if __name__ == "__main__":
