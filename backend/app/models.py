@@ -3,37 +3,26 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-class Personne(Base):
-    __tablename__ = 'personne'
+class Admin(Base):
+    __tablename__ = "admin"
 
     id = Column(Integer, primary_key=True)
     email = Column(String)
     mdp = Column(String)
     note = Column(String)
     pdp = Column(String)
-
-    typeP = Column(String)  # Discriminant
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'personne',
-        'polymorphic_on': typeP
-    }
-
-class Admin(Base):
-    __tablename__ = "admin"
-
-    id = Column(Integer, ForeignKey('personne.id'), primary_key=True)
     nom_entp = Column(String)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'admin'
-    }
-
+ 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, ForeignKey('personne.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    email = Column(String)
+    mdp = Column(String)
+    note = Column(String)
+    pdp = Column(String)
     code_client= Column(String, unique=True, index=True , nullable=False)
     nom = Column(String)
     prenom = Column(String)
@@ -42,9 +31,6 @@ class User(Base):
     telephone = Column(String)
     typeC = Column(String)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'client'
-    }
 
     consommations = relationship("Consommation", back_populates="client")
 
@@ -69,8 +55,10 @@ class Prediction(Base):
     date_cree = Column(Date, default=func.current_date())
     typeC = Column(String)
     
-    modele_id = Column(Integer, ForeignKey("modele.id"))
-    modele = relationship("Modele", back_populates="predictions")
+    
+    arima = relationship("Arima", back_populates="prediction_rel", uselist=False, cascade="all, delete-orphan")
+    sarima = relationship("Sarima", back_populates="prediction_rel", uselist=False, cascade="all, delete-orphan")
+    lstm = relationship("LSTM", back_populates="prediction_rel", uselist=False, cascade="all, delete-orphan")
 
     points = relationship("PointPredit", back_populates="prediction",cascade="all, delete-orphan")
 
@@ -87,60 +75,67 @@ class PointPredit(Base):
     prediction = relationship("Prediction", back_populates="points")
 
 
-class Modele(Base):
-    __tablename__ = "modele"
+# class Modele(Base):
+#     __tablename__ = "modele"
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     mape = Column(Float)
+#     typeM = Column(String)
+    
+#     predictions = relationship("Prediction", back_populates="modele", cascade="all, delete-orphan")
+
+
+#     __mapper_args__ = {
+#         'polymorphic_identity': 'modele',
+#         'polymorphic_on': typeM
+#     }
+
+
+
+class LSTM(Base):
+    __tablename__ = "lstm"
 
     id = Column(Integer, primary_key=True, index=True)
     mape = Column(Float)
-    typeM = Column(String)
-    
-    predictions = relationship("Prediction", back_populates="modele", cascade="all, delete-orphan")
-
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'modele',
-        'polymorphic_on': typeM
-    }
-
-
-
-class ModeleDeepLearning(Base):
-    __tablename__ = "modele_deep_learning"
-
-    id = Column(Integer, ForeignKey('modele.id'), primary_key=True)
     epochs = Column(Float)
     batch_size = Column(Integer)
     unitsC1 = Column(Integer)
     unitsC2 = Column(Integer)
     seq_length = Column(Integer)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'deeplearning'
-    }
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
 
-class ModeleStatique(Base):
-    __tablename__ = "modele_statique"
+    prediction_rel = relationship("Prediction", back_populates="lstm")
 
-    id = Column(Integer, ForeignKey('modele.id'), primary_key=True)
+
+
+class Arima(Base):
+    __tablename__ = "arima"
+
+    id = Column(Integer, primary_key=True, index=True)
+    mape = Column(Float)
     p = Column(Integer)
     d = Column(Integer)
     q = Column(Integer)
 
-    sarima = relationship("Sarima", uselist=False, backref="modele_statique")
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'arima'
-    }
+    prediction_rel = relationship("Prediction", back_populates="arima")
 
+    
 class Sarima(Base):
     __tablename__ = "sarima"
 
-    id = Column(Integer, ForeignKey('modele_statique.id'), primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
+    mape = Column(Float)
+    p = Column(Integer)
+    d = Column(Integer)
+    q = Column(Integer)
     s = Column(Integer)
     P = Column(Integer)
     D = Column(Integer)
     Q = Column(Integer)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'sarima'
-    }
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
+    
+    prediction_rel = relationship("Prediction", back_populates="sarima")
