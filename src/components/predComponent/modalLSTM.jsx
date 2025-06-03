@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function ModalArima({ onClose, onPredictionDone }) {
+export default function ModalLSTM({ onClose, onPredictionDone }) {
   const [period, setPeriod] = useState('');
   const [file, setFile] = useState(null);
 
@@ -12,7 +12,7 @@ export default function ModalArima({ onClose, onPredictionDone }) {
       formData.append("fichier", file);
       console.log(file)
     }
-    formData.append("type_modele", "arima");
+    formData.append("type_modele", "lstm");
 
     try {
       const response = await fetch("http://localhost:8000/predict", {
@@ -50,7 +50,7 @@ export default function ModalArima({ onClose, onPredictionDone }) {
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-        <h2 className="text-lg font-semibold mb-4">Créer une prédiction avec ARIMA</h2>
+        <h2 className="text-lg font-semibold mb-4">Créer une prédiction avec LSTM</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* <div>

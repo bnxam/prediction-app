@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.schemas.userSchema import UserCreate, UserUpdate, UserResponse
-from app.models.user import User
+from app import models
 from app.database import get_db
 from passlib.context import CryptContext
 from app.routers.auth import get_current_user
@@ -106,12 +106,12 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
     db.refresh(db_user)
     return db_user
 
-# Delete user
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+# # Delete user
+# @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+# async def delete_user(user_id: int, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
     db.delete(user)
     db.commit()

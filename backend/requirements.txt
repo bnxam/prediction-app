@@ -7,6 +7,8 @@ passlib[bcrypt]
 pydantic[email]
 statsmodels
 python-multipart
-scikit-learn
 python-jose[cryptography]
 passlib[bcrypt]
+tensorflow
+alembic
+scikit-learn
