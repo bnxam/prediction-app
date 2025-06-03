@@ -7,18 +7,46 @@ const Connexion = ({ onClose, onSwitchToRegister, isProcessing, onLoginSubmit })
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   onLoginSubmit({ email, password, rememberMe });
+  // };
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onLoginSubmit({ email, password, rememberMe });
+    try {
+      const response = await fetch("http://localhost:8000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          username: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec de la connexion");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("token", data.access_token);
+
+      // Redirection vers la page profil
+      window.location.href = "/profilclient";
+    } catch (err) {
+      alert("Erreur : " + err.message);
+    }
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20">
       <div className="bg-white rounded-lg shadow-md w-full max-w-md mx-4 border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800">Connexion</h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >
             <X className="w-5 h-5" />
@@ -100,8 +128,8 @@ const Connexion = ({ onClose, onSwitchToRegister, isProcessing, onLoginSubmit })
 
             <div className="text-center text-sm text-gray-600">
               Pas de compte ?{' '}
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={onSwitchToRegister}
                 className="text-blue-600 hover:underline"
               >

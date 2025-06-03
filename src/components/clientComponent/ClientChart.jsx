@@ -84,11 +84,26 @@ import {
 } from 'recharts';
 
 const ClientChart = ({ data = [], predictions = [] }) => {
-  // 1. Créer un seul tableau combiné avec toutes les données
-  const allData = [...data, ...predictions];
+  // Fusion des données avec des clés distinctes
+  const allData = [];
 
-  // 2. Trouver l'index où commencent les prédictions
-  const predictionStartIndex = data.length;
+  // Ajouter les données réelles
+  data.forEach((item) => {
+    allData.push({
+      month: item.month,
+      realValue: item.value,
+      predictedValue: null,
+    });
+  });
+
+  // Ajouter les prédictions (en conservant la date)
+  predictions.forEach((item) => {
+    allData.push({
+      month: item.month,
+      realValue: null,
+      predictedValue: item.value,
+    });
+  });
 
   return (
     <div className="w-full h-64 bg-white p-4 rounded shadow">
@@ -101,36 +116,30 @@ const ClientChart = ({ data = [], predictions = [] }) => {
           <Tooltip />
           <Legend />
 
-          {/* Ligne principale (toutes les données) */}
+          {/* Données réelles */}
           <Line
             type="monotone"
-            dataKey="value"
-            data={data}
+            dataKey="realValue"
             stroke="#3b82f6"
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
             name="Données réelles"
+            connectNulls
           />
 
-          {/* Ligne de prédiction (qui commence après les données réelles) */}
-          {predictions.length > 0 && (
-            <Line
-              type="monotone"
-              dataKey="value"
-              data={allData.slice(predictionStartIndex - 1)} // -1 pour connecter au dernier point réel
-              stroke="#f97316"
-              strokeDasharray="5 5"
-              strokeWidth={2}
-              dot={{
-                r: 4,
-                fill: ({ index }) => index > 0 ? '#f97316' : 'transparent' // Cache le point de connexion
-              }}
-              activeDot={{ r: 6 }}
-              name="Prédictions"
-              connectNulls
-            />
-          )}
+          {/* Prédictions */}
+          <Line
+            type="monotone"
+            dataKey="predictedValue"
+            stroke="#f97316"
+            // strokeDasharray="5 5"
+            strokeWidth={2}
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+            name="Prédictions"
+            connectNulls
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

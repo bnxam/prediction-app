@@ -1,13 +1,4 @@
-# from sqlalchemy import Column, Integer, String
-# from ..database import Base  # Import depuis le package models
 
-# class User(Base):
-#     __tablename__ = "users"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     nom = Column(String(50), nullable=False)
-#     email = Column(String(50), unique=True, nullable=False)
-#     mdp = Column(String(255), nullable=False)
 
 from sqlalchemy import Column, Integer, String, Float, Boolean, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
@@ -20,19 +11,34 @@ modeles_donnees = Table(
     Column("modele_id", Integer, ForeignKey("modeles.id")),
     Column("donnee_id", Integer, ForeignKey("donnees.id")),
 )
+class Admin(Base):
+    __tablename__ = "admin"  # ✅ double underscore
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String)
+    mdp = Column(String)
+    note = Column(String)
+    pdp = Column(String)
+    nom_entp = Column(String)
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    code_client = Column(String, unique=True, index=True, nullable=False)
+
     nom = Column(String)
+    prenom = Column(String)
+    adresse = Column(String)
+    telephone = Column(String)
+    date_naissance = Column(Date)
     email = Column(String, unique=True, index=True)
     mdp = Column(String)
-    secteur = Column(String)
-    photodeprofil = Column(String)
 
     dataset = relationship("Dataset", back_populates="user", uselist=False)
     modeles = relationship("Modele", back_populates="user")
+
+
 
 
 class Dataset(Base):
