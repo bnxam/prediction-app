@@ -53,21 +53,12 @@ const GrapheSection = () => {
           }));
 
           // Créer un tableau combiné pour les données historiques si elles existent
-<<<<<<< HEAD
-          // const historique = json.donnees_historiques ? 
-          //   json.donnees_historiques.dates.map((date, index) => ({
-          //     Date: date,
-          //     Valeur: json.donnees_historiques.valeurs[index],
-          //     Type: 'historique' // Pour distinguer les données historiques
-          //   })) : [];
-=======
           const historique = json.donnees_historiques ?
             json.donnees_historiques.dates.map((dateH, index) => ({
               Date: dateH,
               Valeur: json.donnees_historiques.valeurs[index],
               Type: 'historique' // Pour distinguer les données historiques
             })) : [];
->>>>>>> prediction
 
           // Combiner les deux tableaux (historique + prédictions)
           // const combined = [...historique, ...predictions];

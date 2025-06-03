@@ -5,7 +5,7 @@ from app import models
 from app.database import get_db
 from passlib.context import CryptContext
 from app.routers.auth import get_current_user
-
+from app.models.user import User
   # Tu dois avoir cette dépendance définie dans auth.py
 router = APIRouter(
     prefix="/users",

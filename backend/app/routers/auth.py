@@ -46,6 +46,7 @@ from datetime import datetime, timedelta
 from app.database import get_db
 from app.models.user import User
 from passlib.context import CryptContext
+from typing import Optional, Union  # Ajout de Union pour les autres types
 
 # --- Paramètres JWT ---
 SECRET_KEY = "votre_clé_secrète_super_longue"
@@ -68,9 +69,9 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    sub: str | None = None
+    sub: Optional[str] = None  # Correction déjà faite
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):  # Correction ici
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
