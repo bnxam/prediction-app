@@ -44,7 +44,7 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from app.database import get_db
-from app.models.user import User
+from app.models.model import User
 from passlib.context import CryptContext
 from typing import Optional, Union  # Ajout de Union pour les autres types
 

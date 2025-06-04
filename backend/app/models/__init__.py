@@ -1,3 +1,10 @@
-from .user import Admin, User, Dataset, Donnee, Modele, Arima, Sarima, Sarimax
-
-__all__ = ["Admin", "User", "Dataset", "Donnee", "Modele", "Arima", "Sarima", "Sarimax"]
+from .model import (
+    Admin,
+    User,
+    Consommation,
+    Prediction,
+    PointPredit,
+    LSTM,
+    Arima,
+    Sarima,
+)

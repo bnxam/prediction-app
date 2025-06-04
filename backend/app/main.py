@@ -17,7 +17,8 @@
 from fastapi import FastAPI
 from app.routers import users, prediction, auth
 from app.database import engine
-from app.models.user import Base
+from app.models.model import Base
+# from app.models.models import Base 
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
