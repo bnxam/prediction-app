@@ -79,8 +79,8 @@ const ClientTable = ({ users, onEdit, onDelete, onViewData }) => {
             <th className="p-4">ID</th>
             <th className="p-4">Code Client</th> {/* ✅ Ajout */}
             <th className="p-4">Nom</th>
-            <th className="p-4">Prénom</th><
-              th className="p-4">Date de Naissance</th>
+            <th className="p-4">Prénom</th>
+              <th className="p-4">Date de Naissance</th>
             <th className="p-4">Adresse</th>
             <th className="p-4">Téléphone</th>
             <th className="p-4">Email</th>
