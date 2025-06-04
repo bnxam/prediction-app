@@ -12,3 +12,4 @@ passlib[bcrypt]
 tensorflow
 alembic
 scikit-learn
+axios
