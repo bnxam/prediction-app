@@ -15,22 +15,39 @@ class Admin(Base):
 
  
 
+# class User(Base):
+#     __tablename__ = "users"
+
+#     id = Column(Integer, primary_key=True)
+#     email = Column(String)
+#     mdp = Column(String)
+#     note = Column(String)
+#     pdp = Column(String)
+#     code_client= Column(String, unique=True, index=True , nullable=False)
+#     nom = Column(String)
+#     prenom = Column(String)
+#     adresse = Column(String)
+#     date_naissance = Column(Date)
+#     telephone = Column(String)
+#     typeC = Column(String)
+
+
+#     consommations = relationship("Consommation", back_populates="client")
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
-    email = Column(String)
-    mdp = Column(String)
-    note = Column(String)
-    pdp = Column(String)
-    code_client= Column(String, unique=True, index=True , nullable=False)
-    nom = Column(String)
-    prenom = Column(String)
-    adresse = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False)
+    mdp = Column(String(255), nullable=False)
+    note = Column(String(255))
+    pdp = Column(String(255))
+    code_client = Column(String(50), unique=True, index=True, nullable=False)
+    nom = Column(String(100))
+    prenom = Column(String(100))
+    adresse = Column(String(255))
     date_naissance = Column(Date)
-    telephone = Column(String)
-    typeC = Column(String)
-
+    telephone = Column(String(20))
+    typeC = Column(String(50))
 
     consommations = relationship("Consommation", back_populates="client")
 

@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Connexion = ({ onClose, onSwitchToRegister, isProcessing, onLoginSubmit }) => {
   const [email, setEmail] = useState('');
@@ -11,34 +13,88 @@ const Connexion = ({ onClose, onSwitchToRegister, isProcessing, onLoginSubmit })
   //   e.preventDefault();
   //   onLoginSubmit({ email, password, rememberMe });
   // };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch("http://localhost:8000/auth/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/x-www-form-urlencoded",
+  //       },
+  //       body: new URLSearchParams({
+  //         username: email,
+  //         password: password,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error("Échec de la connexion");
+  //     }
+
+  //     const data = await response.json();
+  //     localStorage.setItem("token", data.access_token);
+
+  //     // Redirection vers la page profil
+  //     window.location.href = "/profilclient";
+  //   } catch (err) {
+  //     alert("Erreur : " + err.message);
+  //   }
+  // };
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
+      // 👤 Tentative de connexion client
+      // const response = await axios.post(
+      //   'http://localhost:8000/login',
+      //   new URLSearchParams({
+      //     username: email,
+      //     password: password,
+      //   }),
+      //   {
+      //     headers: {
+      //       'Content-Type': 'application/x-www-form-urlencoded',
+      //     },
+      //   }
+      // );
+      const response = await axios.post(
+        'http://localhost:8000/auth/login',
+        new URLSearchParams({
           username: email,
           password: password,
         }),
-      });
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error("Échec de la connexion");
+
+      const token = response.data.access_token;
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', 'client');
+      navigate('/profilclient');
+    } catch (clientError) {
+      try {
+        // 👨‍💼 Tentative de connexion admin
+        const response = await axios.post('http://localhost:8000/admin/login', {
+          email: email,
+          mdp: password,
+        });
+
+        const token = response.data.access_token;
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', 'admin');
+        navigate('/profil');
+      } catch (adminError) {
+        alert('Email ou mot de passe incorrect.');
+        console.error('Échec de connexion client ET admin');
       }
-
-      const data = await response.json();
-      localStorage.setItem("token", data.access_token);
-
-      // Redirection vers la page profil
-      window.location.href = "/profilclient";
-    } catch (err) {
-      alert("Erreur : " + err.message);
     }
   };
-
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20">

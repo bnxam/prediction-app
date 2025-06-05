@@ -45,6 +45,12 @@ useEffect(() => {
     fetchUser();
 }, []);
 
+useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'client') {
+        navigate('/connexion');
+    }
+}, []);
 
 
 if (!user) return <div className="p-8 text-red-500">Chargement... (ou erreur)</div>;
