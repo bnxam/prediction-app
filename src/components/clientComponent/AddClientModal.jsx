@@ -1,134 +1,3 @@
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// import React, { useState } from 'react';
-
-// const AddClientModal = ({ isOpen, onClose, onSave }) => {
-//     const [formData, setFormData] = useState({
-//         code_client: '',
-//         nom: '',
-//         prenom: '',
-//         adresse: '',
-//         telephone: '',
-//         date_naissance: '',
-//         email: '',
-//         mdp: '',
-//     });
-
-
-
-//     const [errors, setErrors] = useState({});
-
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData({ ...formData, [name]: value });
-
-//         if (errors[name]) {
-//             setErrors({ ...errors, [name]: '' });
-//         }
-//     };
-
-//     const validate = () => {
-//         const newErrors = {};
-//         if (!formData.code_client.trim()) newErrors.code_client = 'Code client requis';
-//         if (!formData.nom.trim()) newErrors.nom = 'Nom requis';
-//         if (!formData.prenom.trim()) newErrors.prenom = 'Prénom requis';
-//         if (!formData.adresse.trim()) newErrors.adresse = 'Adresse requise';
-//         if (!formData.telephone.trim()) newErrors.telephone = 'Téléphone requis';
-//         if (!formData.date_naissance.trim()) newErrors.date_naissance = 'Date de naissance requise';
-//         if (!formData.email.trim()) {
-//             newErrors.email = 'Email requis';
-//         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-//             newErrors.email = 'Format email invalide';
-//         }
-//         if (!formData.mdp.trim()) newErrors.mdp = 'Mot de passe requis';
-//         return newErrors;
-//     };
-
-//     const handleSubmit = () => {
-//         const validationErrors = validate();
-//         if (Object.keys(validationErrors).length > 0) {
-//             setErrors(validationErrors);
-//             return;
-//         }
-
-//         onSave(formData);
-//         onClose();
-//         setFormData({
-//             code_client: '', // ✅ ajouter cette ligne
-//             nom: '',
-//             prenom: '',
-//             adresse: '',
-//             telephone: '',
-//             date_naissance: '',
-//             email: '',
-//             mdp: '',
-//         });
-
-//         setErrors({});
-//     };
-
-//     if (!isOpen) return null;
-
-//     return (
-//         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-opacity-60">
-//             <div className="bg-white w-full max-w-2xl p-6 rounded-2xl shadow-lg">
-//                 <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">
-//                     Ajouter un nouveau client
-//                 </h2>
-
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                     {[
-//                         { label: 'Code Client', name: 'code_client', type: 'text' },
-//                         { label: 'Nom', name: 'nom', type: 'text' },
-//                         { label: 'Prénom', name: 'prenom', type: 'text' },
-//                         { label: 'Adresse', name: 'adresse', type: 'text' },
-//                         { label: 'Téléphone', name: 'telephone', type: 'text' },
-//                         { label: 'Date de naissance', name: 'date_naissance', type: 'date' },
-//                         { label: 'Email', name: 'email', type: 'email' },
-//                         { label: 'Mot de passe', name: 'mdp', type: 'password' },
-//                     ].map(({ label, name, type }) => (
-//                         <div key={name}>
-//                             <label className="text-sm text-gray-600">{label}</label>
-//                             <input
-//                                 type={type}
-//                                 name={name}
-//                                 value={formData[name]}
-//                                 onChange={handleChange}
-//                                 className={`w-full border rounded-lg p-2 focus:outline-none focus:ring-2 ${errors[name]
-//                                     ? 'border-red-500 focus:ring-red-400'
-//                                     : 'border-gray-300 focus:ring-yellow-400'
-//                                     }`}
-//                             />
-//                             {errors[name] && (
-//                                 <p className="text-xs text-red-500 mt-1">{errors[name]}</p>
-//                             )}
-//                         </div>
-//                     ))}
-//                 </div>
-
-//                 <div className="flex justify-end mt-6 space-x-3">
-//                     <button
-//                         onClick={onClose}
-//                         className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
-//                     >
-//                         Annuler
-//                     </button>
-//                     <button
-//                         onClick={handleSubmit}
-//                         className="px-4 py-2 rounded-lg bg-yellow-400 text-white hover:bg-yellow-500"
-//                     >
-//                         Ajouter
-//                     </button>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default AddClientModal;
-/////////////////////////////////////////////////////////////////////////////////
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiUserPlus, FiKey, FiMail, FiPhone, FiHome, FiCalendar, FiUser, FiCode } from 'react-icons/fi';
@@ -165,7 +34,20 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
         if (errors[name]) setErrors({ ...errors, [name]: '' });
     };
 
-
+    const resetForm = () => {
+        setFormData({
+            code_client: '',
+            nom: '',
+            prenom: '',
+            adresse: '',
+            telephone: '',
+            date_naissance: '',
+            email: '',
+            mdp: '',
+            fichier_donnees: null,
+        });
+        setErrors({});
+    };
     const validate = () => {
         const newErrors = {};
         if (!formData.code_client.trim()) newErrors.code_client = 'Champ requis';
@@ -183,26 +65,157 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
         return newErrors;
     };
 
-    const handleSubmit = () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-        onSave(formData);
+    // const handleSubmit = () => {
+    //     const validationErrors = validate();
+    //     if (Object.keys(validationErrors).length > 0) {
+    //         setErrors(validationErrors);
+    //         return;
+    //     }
+    //     onSave();
+    //     onClose();
+    //     setFormData({
+    //         code_client: '',
+    //         nom: '',
+    //         prenom: '',
+    //         adresse: '',
+    //         telephone: '',
+    //         date_naissance: '',
+    //         email: '',
+    //         mdp: '',
+    //     });
+    //     setErrors({});
+    // };
+
+
+const handleSubmit = () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+    }
+
+    const { fichier_donnees, ...clientData } = formData;
+
+    if (fichier_donnees) {
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            const fileContent = event.target.result;
+
+            const rows = fileContent
+                .split('\n')
+                .map(row => row.split(',').map(cell => cell.trim()));
+            const headers = rows[0];
+            const dataRows = rows.slice(1).filter(row => row.length === headers.length);
+
+            const donneesFichier = dataRows.map(row => {
+                const obj = {};
+                headers.forEach((header, i) => {
+                    if (header === "valeur") {
+                        obj[header] = parseFloat(row[i]);
+                    } else if (header === "date") {
+                        // Formatage robuste de la date
+                        const dateStr = row[i];
+                        const dateObj = new Date(dateStr);
+                        
+                        // Vérification que la date est valide
+                        if (isNaN(dateObj.getTime())) {
+                            console.error(`Date invalide: ${dateStr}`);
+                            return null;
+                        }
+                        
+                        // Formatage en YYYY-MM-DD
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        obj[header] = `${year}-${month}-${day}`;
+                    } else {
+                        obj[header] = row[i];
+                    }
+                });
+                return obj;
+            }).filter(item => item !== null); // Filtre les éventuelles dates invalides
+
+            const payload = {
+                ...clientData,
+                consommations: donneesFichier,
+            };
+
+            console.log("Payload envoyé à l'API:", payload); // Pour débogage
+            onSave(payload);
+            onClose();
+            resetForm();
+        };
+
+        reader.readAsText(fichier_donnees);
+    } else {
+        const payload = {
+            ...clientData,
+            consommations: [],
+        };
+        onSave(payload);
         onClose();
-        setFormData({
-            code_client: '',
-            nom: '',
-            prenom: '',
-            adresse: '',
-            telephone: '',
-            date_naissance: '',
-            email: '',
-            mdp: '',
-        });
-        setErrors({});
-    };
+        resetForm();
+    }
+};
+
+
+    // const handleSubmit = () => {
+    //     const validationErrors = validate();
+    //     if (Object.keys(validationErrors).length > 0) {
+    //         setErrors(validationErrors);
+    //         return;
+    //     }
+
+    //     const { fichier_donnees, ...clientData } = formData;
+
+    //     if (fichier_donnees) {
+    //         const reader = new FileReader();
+
+    //         reader.onload = async (event) => {
+    //             const fileContent = event.target.result;
+
+    //             const rows = fileContent
+    //                 .split('\n')
+    //                 .map(row => row.split(',').map(cell => cell.trim()));
+    //             const headers = rows[0];
+    //             const dataRows = rows.slice(1).filter(row => row.length === headers.length);
+
+    //             const donneesFichier = dataRows.map(row => {
+    //                 const obj = {};
+    //                 headers.forEach((header, i) => {
+    //                     if (header === "valeur") {
+    //                         obj[header] = parseFloat(row[i]);
+    //                     } else if (header === "date") {
+    //                         obj[header] = new Date(row[i]).toISOString().split('T')[0]; // format 'YYYY-MM-DD'
+    //                     } else {
+    //                         obj[header] = row[i];
+    //                     }
+    //                 });
+    //                 return obj;
+    //             });
+    //             const payload = {
+    //                 ...clientData,            // <-- fusionne les données du client à la racine
+    //                 donnees_fichier: donneesFichier,  // <-- ajoute le tableau
+    //             };
+
+    //             onSave(payload);
+    //             onClose();
+    //             resetForm();
+    //         };
+
+    //         reader.readAsText(fichier_donnees);
+    //     } else {
+    //         const payload = {
+    //             ...clientData,
+    //             donnees_fichier: [],
+    //         };
+    //         onSave(payload);
+    //         onClose();
+    //         resetForm();
+    //     }
+    // };
+
 
     const fieldConfig = [
         { label: 'Code Client', name: 'code_client', type: 'text', icon: <FiCode /> },

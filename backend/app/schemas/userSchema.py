@@ -43,6 +43,18 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import date
+from typing import List
+
+class ConsommationCreate(BaseModel):
+    valeur: float
+    date: date
+
+class ConsommationResponse(ConsommationCreate):
+    id: int
+    client_id: int
+
+    class Config:
+        from_attributes = True  
 
 class UserCreate(BaseModel):
     code_client: str  
@@ -53,6 +65,7 @@ class UserCreate(BaseModel):
     date_naissance: date
     email: EmailStr
     mdp: str
+    consommations: List[ConsommationCreate]
 
 
 class UserResponse(BaseModel):
@@ -64,9 +77,10 @@ class UserResponse(BaseModel):
     telephone: str
     date_naissance: date
     email: EmailStr
+    data: List[ConsommationResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserUpdate(BaseModel):

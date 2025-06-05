@@ -193,7 +193,6 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
-
     if user.consommations:
         for conso in user.consommations:
             db_cons = Consommation(
@@ -219,12 +218,26 @@ async def get_users(code_client: str = None, db: Session = Depends(get_db)):
 
 
 # Get user by ID
-@router.get("/{user_id}", response_model=UserResponse)
+# @router.get("/{user_id}", response_model=UserResponse)
+# async def get_user(user_id: int, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+#     return user
+
+@router.get("/{user_id}")
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    return user
+    
+    # Récupère les consommations associées
+    consommations = db.query(Consommation).filter(Consommation.client_id == user_id).all()
+    
+    return {
+        **user.__dict__,
+        "data": [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
+    }
 
 # Update user
 @router.put("/{user_id}", response_model=UserResponse)
