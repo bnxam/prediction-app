@@ -5,7 +5,7 @@ from app import models
 from app.database import get_db
 from passlib.context import CryptContext
 from app.routers.auth import get_current_user
-from app.models.model import User
+from app.models.model import User ,Consommation
 # from app.models import User
   # Tu dois avoir cette dépendance définie dans auth.py
 router = APIRouter(
@@ -66,6 +66,18 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    
+    if user.consommations:
+        for conso in user.consommations:
+            db_cons = Consommation(
+                valeur=conso.valeur,
+                date=conso.date,
+                client_id=db_user.id
+            )
+            db.add(db_cons)
+        db.commit()
+
     return db_user
 
 
@@ -81,12 +93,26 @@ async def get_users(code_client: str = None, db: Session = Depends(get_db)):
 
 
 # Get user by ID
-@router.get("/{user_id}", response_model=UserResponse)
+# @router.get("/{user_id}", response_model=UserResponse)
+# async def get_user(user_id: int, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+#     return user
+
+@router.get("/{user_id}")
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    return user
+    
+    # Récupère les consommations associées
+    consommations = db.query(Consommation).filter(Consommation.client_id == user_id).all()
+    
+    return {
+        **user.__dict__,
+        "data": [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
+    }
 
 # Update user
 @router.put("/{user_id}", response_model=UserResponse)
@@ -107,6 +133,18 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
     db.refresh(db_user)
     return db_user
 
+
+# @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+# def delete_user(user_id: int, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+#     db.delete(user)
+#     db.commit()
+#     return None
+
+
+
 # # Delete user
 # @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 # async def delete_user(user_id: int, db: Session = Depends(get_db)):
@@ -114,10 +152,24 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
 #     if not user:
 #         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
-    db.delete(user)
-    db.commit()
-    return None
+    # db.delete(user)
+    # db.commit()
+    # return None
     # recuperation des donnees 
 # @router.get("/me", response_model=UserResponse)
 # async def get_current_user_data(current_user: User = Depends(get_current_user)):
 #     return current_user
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    db.delete(user)
+    db.commit()
+    return None
+
+    db.delete(user)
+    db.commit()
+    return None

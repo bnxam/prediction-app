@@ -41,7 +41,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # Routes
 app.include_router(auth.router, prefix="/auth")  # Seulement cette ligne
 app.include_router(users.router)

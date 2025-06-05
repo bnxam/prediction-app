@@ -17,7 +17,7 @@ const Clients = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/users/', {
+                const response = await axios.get('http://localhost:8000/users/', {
                     params: search ? { code_client: search } : {}
                 });
                 setUsers(response.data);
@@ -36,18 +36,18 @@ const Clients = () => {
     const [viewUser, setViewUser] = useState(null);
 
     function generateDummyData() {
-    const data = [];
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        data.unshift({
-            date: date.toISOString().split('T')[0],
-            valeur: Math.floor(Math.random() * 100) + 1,
-        });
+        const data = [];
+        const today = new Date();
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            data.unshift({
+                date: date.toISOString().split('T')[0],
+                valeur: Math.floor(Math.random() * 100) + 1,
+            });
+        }
+        return data;
     }
-    return data;
-}
 
 
     // const filteredUsers = users.filter((user) =>
@@ -92,19 +92,39 @@ const Clients = () => {
     //         }
     //     }
     // };
+
     const handleAddUser = (newUser) => {
-        axios.post('http://127.0.0.1:8000/users/', newUser)
-            .then(() => {
-                // Recharge tous les utilisateurs depuis l’API
-                return axios.get('http://127.0.0.1:8000/users/');
-            })
+        console.log("Les infos à sauvegarder :", newUser);
+
+        axios.post('http://localhost:8000/users/', newUser)
+
+            .then(() => axios.get('http://localhost:8000/users/'))
             .then(response => {
                 setUsers(response.data);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error("Erreur lors de l'ajout :", error);
+                if (error.response) {
+                    console.error("Détails de l'erreur :", error.response.data);
+                }
             });
     };
+    // const handleAddUser = (newUser) => {
+    //     console.log("les info a saver",newUser);
+    //     axios.post('http://127.0.0.1:8000/users/', newUser)
+    //         .then(() => {
+
+    //             // Recharge tous les utilisateurs depuis l’API
+    //             return axios.get('http://127.0.0.1:8000/users/');
+
+    //         })
+    //         .then(response => {
+    //             setUsers(response.data);
+    //         })
+    //         .catch(error => {
+    //             console.error("Erreur lors de l'ajout :", error);
+    //         });
+    // };
 
     // modification du user 
     const handleEdit = (userId) => {
@@ -115,8 +135,8 @@ const Clients = () => {
 
     const handleUpdateUser = async (updatedUser) => {
         try {
-            await axios.put(`http://127.0.0.1:8000/users/${updatedUser.id}`, updatedUser);
-            const response = await axios.get('http://127.0.0.1:8000/users/');
+            await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+            const response = await axios.get('http://localhost:8000/users/');
             setUsers(response.data);
             setEditModalOpen(false);
             setSelectedUser(null);
@@ -135,19 +155,34 @@ const Clients = () => {
     // const handleViewUserData = (user) => {
     //     setViewUser(user);
     // };
-    const handleViewUserData = (user) => {
-    const data = generateDummyData();
-    const predictions = generateDummyData().map(d => ({
-        ...d,
-        valeur: d.valeur + 10, // pour voir la différence
-    }));
+    const handleViewUserData = async (user) => {
+        try {
+            // Récupère les données réelles depuis l'API
+            const response = await axios.get(`http://localhost:8000/users/${user.id}`);
+            setViewUser(response.data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des données:", error);
+            // Fallback sur les données fictives si nécessaire
+            // setViewUser({
+            //     ...user,
+            //     data: generateDummyData(),
+            //     predictions: generateDummyData().map(d => ({ ...d, valeur: d.valeur + 10 }))
+            // });
+        }
+    };
+    // const handleViewUserData = (user) => {
+    //     const data = generateDummyData();
+    //     const predictions = generateDummyData().map(d => ({
+    //         ...d,
+    //         valeur: d.valeur + 10, // pour voir la différence
+    //     }));
 
-    setViewUser({
-        ...user,
-        data,
-        predictions,
-    });
-};
+    //     setViewUser({
+    //         ...user,
+    //         data,
+    //         predictions,
+    //     });
+    // };
 
     console.log("Utilisateurs reçus depuis l'API :", users);
 
@@ -155,7 +190,7 @@ const Clients = () => {
         if (!window.confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) return;
 
         try {
-            await axios.delete(`http://127.0.0.1:8000/users/${userId}`);
+            await axios.delete(`http://localhost:8000/users/${userId}`);
             // Mise à jour de la liste sans recharger la page
             setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
         } catch (error) {

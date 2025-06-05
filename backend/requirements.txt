@@ -13,3 +13,4 @@ tensorflow
 alembic
 scikit-learn
 axios
+papaparse
