@@ -48,8 +48,12 @@ from typing import List
 class ConsommationCreate(BaseModel):
     valeur: float
     date: date
+    
+class ConsommationGroupeeResponse(BaseModel):
+    date: date
+    valeur: float
 
-class ConsommationResponse(ConsommationCreate):
+class ConsommationResponse(BaseModel):
     id: int
     client_id: int
 

@@ -68,7 +68,7 @@
 
 
 from fastapi import FastAPI
-from app.routers import users, prediction, auth
+from app.routers import users, prediction, auth , dash
 from app.database import engine
 from app.models.model import Base
 # from app.models.models import Base 
@@ -96,10 +96,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # Routes
-app.include_router(auth.router, prefix="/auth")  # Seulement cette ligne
+
+app.include_router(auth.router, prefix="/auth")
 app.include_router(users.router)
 app.include_router(prediction.router)
 app.include_router(admin.router)
+app.include_router(dash.router)
 
 # # Dépendance pour la BDD
 # def get_db():
