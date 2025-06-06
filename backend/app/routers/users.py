@@ -173,9 +173,10 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     # Vérifie si le code client existe déjà
     if db.query(User).filter(User.code_client == user.code_client).first():
         raise HTTPException(status_code=400, detail="Code client déjà utilisé")
-
+    
+    mdp_from_date = user.date_naissance.strftime("%d%m%Y") 
     # Hash du mot de passe
-    hashed_password = pwd_context.hash(user.mdp)
+    hashed_password = pwd_context.hash(mdp_from_date)
 
     # Création de l'utilisateur
     db_user = User(
@@ -286,16 +287,26 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
     db.commit()
     db.refresh(db_user)
     return db_user
+
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Supprime d'abord les consommations associées
+    db.query(Consommation).filter(Consommation.client_id == user_id).delete()
+    
+    # Puis supprime l'utilisateur
     db.delete(user)
     db.commit()
     return None
+# @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+# async def delete_user(user_id: int, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+#     db.delete(user)
+#     db.commit()
+#     return None
 
-    db.delete(user)
-    db.commit()
-    return None
- 

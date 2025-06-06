@@ -61,30 +61,10 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Email invalide';
         }
-        if (!formData.mdp.trim()) newErrors.mdp = 'Champ requis';
+        // if (!formData.mdp.trim()) newErrors.mdp = 'Champ requis';
         return newErrors;
     };
 
-    // const handleSubmit = () => {
-    //     const validationErrors = validate();
-    //     if (Object.keys(validationErrors).length > 0) {
-    //         setErrors(validationErrors);
-    //         return;
-    //     }
-    //     onSave();
-    //     onClose();
-    //     setFormData({
-    //         code_client: '',
-    //         nom: '',
-    //         prenom: '',
-    //         adresse: '',
-    //         telephone: '',
-    //         date_naissance: '',
-    //         email: '',
-    //         mdp: '',
-    //     });
-    //     setErrors({});
-    // };
 
 
 const handleSubmit = () => {
@@ -160,62 +140,6 @@ const handleSubmit = () => {
 };
 
 
-    // const handleSubmit = () => {
-    //     const validationErrors = validate();
-    //     if (Object.keys(validationErrors).length > 0) {
-    //         setErrors(validationErrors);
-    //         return;
-    //     }
-
-    //     const { fichier_donnees, ...clientData } = formData;
-
-    //     if (fichier_donnees) {
-    //         const reader = new FileReader();
-
-    //         reader.onload = async (event) => {
-    //             const fileContent = event.target.result;
-
-    //             const rows = fileContent
-    //                 .split('\n')
-    //                 .map(row => row.split(',').map(cell => cell.trim()));
-    //             const headers = rows[0];
-    //             const dataRows = rows.slice(1).filter(row => row.length === headers.length);
-
-    //             const donneesFichier = dataRows.map(row => {
-    //                 const obj = {};
-    //                 headers.forEach((header, i) => {
-    //                     if (header === "valeur") {
-    //                         obj[header] = parseFloat(row[i]);
-    //                     } else if (header === "date") {
-    //                         obj[header] = new Date(row[i]).toISOString().split('T')[0]; // format 'YYYY-MM-DD'
-    //                     } else {
-    //                         obj[header] = row[i];
-    //                     }
-    //                 });
-    //                 return obj;
-    //             });
-    //             const payload = {
-    //                 ...clientData,            // <-- fusionne les données du client à la racine
-    //                 donnees_fichier: donneesFichier,  // <-- ajoute le tableau
-    //             };
-
-    //             onSave(payload);
-    //             onClose();
-    //             resetForm();
-    //         };
-
-    //         reader.readAsText(fichier_donnees);
-    //     } else {
-    //         const payload = {
-    //             ...clientData,
-    //             donnees_fichier: [],
-    //         };
-    //         onSave(payload);
-    //         onClose();
-    //         resetForm();
-    //     }
-    // };
-
 
     const fieldConfig = [
         { label: 'Code Client', name: 'code_client', type: 'text', icon: <FiCode /> },
@@ -225,7 +149,7 @@ const handleSubmit = () => {
         { label: 'Téléphone', name: 'telephone', type: 'tel', icon: <FiPhone /> },
         { label: 'Date de naissance', name: 'date_naissance', type: 'date', icon: <FiCalendar /> },
         { label: 'Email', name: 'email', type: 'email', icon: <FiMail /> },
-        { label: 'Mot de passe', name: 'mdp', type: 'password', icon: <FiKey /> },
+        // { label: 'Mot de passe', name: 'mdp', type: 'password', icon: <FiKey /> },
     ];
 
     return (
