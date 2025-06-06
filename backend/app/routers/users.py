@@ -234,10 +234,39 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
     # Récupère les consommations associées
     consommations = db.query(Consommation).filter(Consommation.client_id == user_id).all()
     
+    grouped_data = []  # Liste pour stocker les résultats groupés
+    s = 0              # Compteur de groupes
+    i = 0              # Index de départ
+    
+    while i < len(consommations):
+        # Initialiser la somme pour ce groupe
+        somme_valeur = 0
+        
+        # Prendre la date du premier élément du groupe
+        date_groupe = consommations[i].date.isoformat()
+        
+        # Somme des 3 valeurs consécutives (ou moins si fin de liste)
+        for j in range(i, min(i + 3, len(consommations))):
+            somme_valeur += consommations[j].valeur
+        
+        # Ajouter le groupe au résultat
+        grouped_data.append({
+            "date": date_groupe,
+            "valeur": somme_valeur
+        })
+        
+        # Passer au prochain groupe de 3
+        i += 3
+        s += 1
+    
     return {
         **user.__dict__,
-        "data": [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
+        "data": grouped_data
     }
+    # return {
+    #     **user.__dict__,
+    #     "data": [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
+    # }
 
 # Update user
 @router.put("/{user_id}", response_model=UserResponse)
