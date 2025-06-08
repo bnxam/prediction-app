@@ -20,6 +20,65 @@ router = APIRouter()
 # router = APIRouter()
 warnings.filterwarnings("ignore")
 
+def predict_lstm(data_list,nb_predict =4, sequence_length=3):
+    """
+    data_list : une liste de dictionnaires [{"date": "...", "valeur": ...}, ...]
+    sequence_length : nombre de pas de temps pour prédire la prochaine valeur
+    """
+
+    # Étape 1 : Extraire les valeurs
+    valeurs = [item['valeur'] for item in data_list]
+    
+    if len(valeurs) < sequence_length + 1:
+        raise ValueError("Pas assez de données pour entraîner le modèle")
+
+    # Étape 2 : Normalisation
+    scaler = MinMaxScaler()
+    valeurs_scaled = scaler.fit_transform(np.array(valeurs).reshape(-1, 1))
+
+    # Étape 3 : Créer les séquences X et y
+    X = []
+    y = []
+    for i in range(len(valeurs_scaled) - sequence_length):
+        X.append(valeurs_scaled[i:i+sequence_length])
+        y.append(valeurs_scaled[i+sequence_length])
+    
+    X = np.array(X)
+    y = np.array(y)
+
+    # Étape 4 : Construire le modèle LSTM
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.LSTM(50, activation='relu', input_shape=(sequence_length, 1)))
+    model.add(tf.keras.layers.Dense(1))
+    model.compile(optimizer='adam', loss='mse')
+
+    # Étape 5 : Entraîner le modèle
+    model.fit(X, y, epochs=50, verbose=0)
+
+    # Étape 6 : Prédire les 3 prochaines valeurs
+    pred_input = valeurs_scaled[-sequence_length:]  # Derniers points
+    predictions = []
+    
+    for _ in range(nb_predict):
+        input_seq = pred_input.reshape(1, sequence_length, 1)
+        pred = model.predict(input_seq, verbose=0)
+        predictions.append(pred[0][0])
+        pred_input = np.append(pred_input[1:], pred[0][0])  # glisser la fenêtre
+
+    # Étape 7 : Dénormalisation
+    predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten()
+    # Étape 8 : Générer les dates futures (trimestre suivant chaque fois)
+    last_date_str = data_list[-1]["date"]
+    last_date = pd.to_datetime(last_date_str)
+    future_dates = [last_date + pd.DateOffset(months=3 * (i + 1)) for i in range(nb_predict)]
+
+    # Étape 9 : Retourner les résultats
+    result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
+
+    return result
+
+
+
 @router.post("/predict")
 async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(...),type_modele: str = Form(...)):
     global last_prediction_result

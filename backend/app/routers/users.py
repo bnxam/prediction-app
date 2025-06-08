@@ -6,6 +6,7 @@ from app.database import get_db
 from passlib.context import CryptContext
 from app.routers.auth import get_current_user
 from app.models.model import User ,Consommation
+from app.routers.prediction import predict_lstm
 # from app.models import User
   # Tu dois avoir cette dépendance définie dans auth.py
 router = APIRouter(
@@ -133,10 +134,11 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         # Passer au prochain groupe de 3
         i += 3
         s += 1
-    
+    predictions = predict_lstm(grouped_data,4)
     return {
         **user.__dict__,
-        "data": grouped_data
+        "data": grouped_data,
+        "predictions": predictions
     }
     # return {
     #     **user.__dict__,

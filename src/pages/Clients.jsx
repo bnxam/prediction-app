@@ -159,6 +159,7 @@ const Clients = () => {
         try {
             // Récupère les données réelles depuis l'API
             const response = await axios.get(`http://localhost:8000/users/${user.id}`);
+            console.log(response)
             setViewUser(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des données:", error);

@@ -1,8 +1,8 @@
-// import React from 'react';
-// import { ArrowLeft, BarChart2, Activity, Database } from 'lucide-react';
-// import StatsCards from './StatsCards';
-// import ClientChart from './ClientChart';
-// import ClientDataTable from './ClientDataTable';
+import React from 'react';
+import { ArrowLeft, BarChart2, Activity, Database, User } from 'lucide-react';
+import StatsCards from './StatsCards';
+import ClientChart from './ClientChart';
+import ClientDataTable from './ClientDataTable';
 
 // const ClientDataViewer = ({ client, onBack }) => {
 //   return (
@@ -84,138 +84,11 @@
 // export default ClientDataViewer;
 
 
-import React from 'react';
-import { ArrowLeft, BarChart2, Activity, Database, User } from 'lucide-react';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-
-// Enregistrement des composants ChartJS
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-const ClientChart = ({ data }) => {
-  // Préparation des données pour le graphique
-  const chartData = {
-    labels: data.map(item => new Date(item.date).toLocaleDateString('fr-FR')),
-    datasets: [{
-      label: 'Consommation (kWh)',
-      data: data.map(item => item.valeur),
-      borderColor: 'rgb(75, 192, 192)',
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      tension: 0.1
-    }]
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Historique des consommations'
-      }
-    },
-    scales: {
-      y: { beginAtZero: false }
-    }
-  };
-
-  return (
-    <div style={{ height: '400px', width: '100%' }}>
-      <Line data={chartData} options={options} />
-    </div>
-  );
-};
-
-const ClientDataTable = ({ data }) => {
-  const formatDate = (dateStr) => {
-    try {
-      return new Date(dateStr).toLocaleDateString('fr-FR');
-    } catch {
-      return dateStr;
-    }
-  };
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="p-3 text-left">Date</th>
-            <th className="p-3 text-left">Consommation (kWh)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item, index) => (
-            <tr key={index} className="border-t hover:bg-gray-50">
-              <td className="p-3">{formatDate(item.date)}</td>
-              <td className="p-3">{item.valeur.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-const StatsCards = ({ data }) => {
-  if (!data || data.length === 0) return null;
-
-  const values = data.map(item => item.valeur);
-  const sum = values.reduce((a, b) => a + b, 0);
-  const avg = sum / values.length;
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-
-  const stats = [
-    { title: 'Moyenne', value: avg.toFixed(2), bg: 'bg-blue-50' },
-    { title: 'Totale', value: sum.toFixed(2), bg: 'bg-green-50' },
-    { title: 'Maximum', value: max.toFixed(2), bg: 'bg-yellow-50' },
-    { title: 'Minimum', value: min.toFixed(2), bg: 'bg-red-50' },
-    { title: 'Dernier', value: values[values.length-1].toFixed(2), bg: 'bg-purple-50' }
-  ];
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-      {stats.map((stat, index) => (
-        <div key={index} className={`${stat.bg} p-4 rounded-lg`}>
-          <p className="text-sm text-gray-500">{stat.title}</p>
-          <p className="text-2xl font-bold">{stat.value}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const ClientDataViewer = ({ user, onBack }) => {
   const hasData = user.data && user.data.length > 0;
 
-  // Debug: affiche les données reçues
-  console.log('Données du client:', {
-    info: {
-      nom: user.nom,
-      prenom: user.prenom,
-      code_client: user.code_client
-    },
-    dataPoints: user.data?.length || 0,
-    sampleData: user.data?.slice(0, 3)
-  });
+ 
 
   return (
     <div className="space-y-8 p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
@@ -273,7 +146,7 @@ const ClientDataViewer = ({ user, onBack }) => {
         </div>
         <div className="p-5">
           {hasData ? (
-            <ClientChart data={user.data} />
+            <ClientChart data={user.data} predictions={user.predictions} />
           ) : (
             <div className="h-64 flex items-center justify-center text-gray-500">
               Aucune donnée à afficher
