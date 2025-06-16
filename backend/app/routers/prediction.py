@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, File, UploadFile
+from fastapi import APIRouter,  Depends, Form, File, UploadFile
 from io import StringIO
 import io
 from fastapi.responses import JSONResponse
@@ -9,11 +9,20 @@ from statsmodels.tsa.arima.model import ARIMA
 from itertools import product
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import warnings
+from app.database import get_db
+from app.models.model import Consommation
+from app.schemas.userSchema import ConsommationGroupeeResponse
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+from datetime import date
+import datetime
+
 # # import traceback
 # from tensorflow.keras.models import Sequential
 # from tensorflow.keras.layers import LSTM, Dense, Dropout
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
+from collections import defaultdict
 
 router = APIRouter()
 
@@ -21,11 +30,7 @@ router = APIRouter()
 warnings.filterwarnings("ignore")
 
 def predict_lstm(data_list,nb_predict =4, sequence_length=3):
-    """
-    data_list : une liste de dictionnaires [{"date": "...", "valeur": ...}, ...]
-    sequence_length : nombre de pas de temps pour prédire la prochaine valeur
-    """
-
+    
     # Étape 1 : Extraire les valeurs
     valeurs = [item['valeur'] for item in data_list]
     
@@ -79,18 +84,192 @@ def predict_lstm(data_list,nb_predict =4, sequence_length=3):
 
 
 
-@router.post("/predict")
-async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(...),type_modele: str = Form(...)):
-    global last_prediction_result
-    try:
-        contents = await fichier.read()
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
-    
-        df["Date"] = pd.to_datetime(df["Date"])
-        df = df.sort_values("Date")
+# @router.post("/predict")
+# async def predict_sarima(periode: int = Form(...),type_modele: str = Form(...), db: Session = Depends(get_db)):
+#     global last_prediction_result 
+#     try:
+#         result = (
+#             db.query(
+#                 Consommation.date,
+#                 func.sum(Consommation.valeur).label("valeur")
+#             )
+#             .group_by(Consommation.date)
+#             .order_by(Consommation.date)  # <-- tri par date croissante
+#             .all()
+#          )
+#         # Convertir result en DataFrame pandas
+#         df = pd.DataFrame(result, columns=["date", "valeur"])
 
-        # Extraire la série temporelle
-        serie = df["Valeur"]
+#         # S'assurer que Date est bien en datetime
+#         df["date"] = pd.to_datetime(df["date"])
+#         df = df.sort_values("date")  # déjà trié normalement, mais au cas où
+        
+#         # Choisir la fréquence de regroupement selon la période demandée
+#         if periode == 3:
+#             freq = "QS"   # Quarterly Start
+#         elif periode == 12:
+#             freq = "AS"   # Annual Start
+#         else:
+#             freq = "MS"   # Monthly Start
+
+#         # Regroupement selon la fréquence
+#         df_grouped = df.resample(freq, on="date").sum().reset_index()
+#         serie = df_grouped.set_index("date")["valeur"]
+
+#         if type_modele == "sarima" :
+
+#             # Définir les plages de recherche pour SARIMA
+#             p = d = q = range(0, 2)
+#             pdq = list(product(p, d, q))
+#             P= D = Q = range(0, 2)
+#             # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
+#             seasonal_pdq = list(product(P, D, Q, [24]))
+
+#             best_rmse = float("inf")
+#             best_model = None
+#             best_params = None
+#             best_results = None
+
+#             train_size = int(len(serie) * 0.8)
+#             train, test = serie[:train_size], serie[train_size:]
+
+#             for param in pdq:
+#                 for seasonal_param in seasonal_pdq:
+#                     try:
+#                         model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
+#                         results = model.fit(disp=False)
+#                         pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
+#                         rmse = np.sqrt(mean_squared_error(test, pred))
+
+#                         if rmse < best_rmse:
+#                             best_rmse = rmse
+#                             best_model = results
+#                             best_params = (param, seasonal_param)
+#                             best_results = results
+#                     except:
+#                         continue
+
+#             # Prédiction avec le meilleur modèle
+#             if periode == 3 :
+#                 forecast = best_model.forecast(steps=4)
+#                 forecast_dates = pd.date_range(start=df_grouped["date"].iloc[-1] + pd.DateOffset(months=3), periods=4, freq='QS')
+#             elif periode == 12:
+#                 last_date = df_grouped["date"].iloc[-1]
+#                 start_date = last_date + pd.DateOffset(months=12)
+#                 forecast = best_model.forecast(steps=3)
+#                 forecast_dates = pd.date_range(start=start_date, periods=3, freq='AS')
+#             else :
+#                 forecast = best_model.forecast(steps=12)
+#                 forecast_dates = pd.date_range(start=df_grouped["date"].iloc[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
+            
+
+#             # Calcul du taux d’erreur (MAPE)
+#             if len(test) >= periode:
+#                 mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
+#             else:
+#                 mape = None  # Pas assez de données pour MAPE
+
+#             last_prediction_result ={ 
+#                 "message": "Prédiction SARIMA effectuée avec succès",
+#                 "methode" : "SARIMA",
+#                 "meilleurs_parametres": {
+#                     "order": best_params[0],
+#                     "seasonal_order": best_params[1]
+#                 },
+#                 "criteres_information": {
+#                     "AIC": round(best_results.aic, 2),
+#                     "BIC": round(best_results.bic, 2)
+#                 },
+#                 "dates_predit": {
+#                     "debut": forecast_dates[0].strftime("%Y-%m-%d"),
+#                     "fin": forecast_dates[-1].strftime("%Y-%m-%d")
+#                 },
+#                 "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+#                 "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+#                 "valeurs": forecast.tolist(),
+#                 "donnees_historiques": {
+#                     "dates": df["date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+#                     "valeurs": df["valeur"].tolist()
+#             }
+#             }
+        
+#             return JSONResponse(content=last_prediction_result)
+
+def grouper_par_periode(consommations, periode):
+    if periode == 1:
+        return [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
+
+    grouped = defaultdict(float)
+
+    for c in consommations:
+        d = c.date  # c.date est déjà un objet de type date
+
+        if periode == 4:  # Trimestre
+            trimestre = (d.month - 1) // 3 + 1
+            cle = (d.year, trimestre)  # tuple comme clé
+        elif periode == 12:  # Année
+            cle = (d.year,)
+        else:
+            cle = (d.isoformat(),)
+
+        grouped[cle] += c.valeur
+
+    resultat = []
+    for cle, valeur in grouped.items():
+        if len(cle) == 2:  # Trimestre
+            annee, trimestre = cle
+            mois_debut = (trimestre - 1) * 3 + 1
+            date_groupe = date(annee, mois_debut, 1).isoformat()
+        elif len(cle) == 1 and isinstance(cle[0], int):  # Année
+            date_groupe = date(cle[0], 1, 1).isoformat()
+        else:  # cas général (rare)
+            date_groupe = cle[0]
+
+        resultat.append({
+            "date": date_groupe,
+            "valeur": valeur
+        })
+
+    resultat.sort(key=lambda x: x["date"])
+    return resultat
+
+
+
+
+
+
+# methode post a refaire 
+
+@router.post("/predict")
+async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
+    global last_prediction_result
+    last_prediction_result = {}
+    try:
+        result = (
+            db.query(
+                Consommation.date,
+                func.sum(Consommation.valeur).label("valeur")
+            )
+            .group_by(Consommation.date)
+            .order_by(Consommation.date)
+            .all()
+        )
+
+        # Transformation en DataFrame
+        df = pd.DataFrame(result, columns=["date", "valeur"])
+        print(df)
+        # Conversion en datetime (optionnelle)
+        df["date"] = pd.to_datetime(df["date"])
+        df.set_index("date", inplace=True)
+        print("1. Requête SQL exécutée")
+        print("2. Transformation en DataFrame faite")
+        print(df.head())
+
+        print("3. Conversion en datetime")
+        print(df.dtypes)
+
+        print("4. Définition de l'index")
+        print(type_modele)
         if type_modele == "sarima" :
 
             # Définir les plages de recherche pour SARIMA
@@ -98,22 +277,24 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
             pdq = list(product(p, d, q))
             P= D = Q = range(0, 2)
             # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
-            seasonal_pdq = list(product(P, D, Q, [24]))
+            seasonal_pdq = list(product(P, D, Q, [6]))
 
             best_rmse = float("inf")
             best_model = None
             best_params = None
             best_results = None
 
-            train_size = int(len(serie) * 0.8)
-            train, test = serie[:train_size], serie[train_size:]
+            train_size = int(len(df) * 0.8)
+            train, test = df[:train_size], df[train_size:]
 
             for param in pdq:
+                print("the seasonal param",param)
                 for seasonal_param in seasonal_pdq:
                     try:
                         model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
                         results = model.fit(disp=False)
                         pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
+                        
                         rmse = np.sqrt(mean_squared_error(test, pred))
 
                         if rmse < best_rmse:
@@ -124,19 +305,22 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
                     except:
                         continue
 
-            # Prédiction avec le meilleur modèle
-            forecast = best_model.forecast(steps=periode)
-            forecast_dates = pd.date_range(start=df["Date"].iloc[-1] + pd.Timedelta(hours=1), periods=periode, freq='H')
+        
+            forecast = best_model.forecast(steps=12)
+            print("Index dernier:", df.index[-1])
+            print("Type:", type(df.index[-1]))
+            print("la valeur predite",forecast)
+            forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
+            print("len teste idk",len(test))
 
             # Calcul du taux d’erreur (MAPE)
-            if len(test) >= periode:
+            if len(test) >= 12:
                 mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
             else:
                 mape = None  # Pas assez de données pour MAPE
-
-            last_prediction_result ={ 
+            last_prediction_result = {
                 "message": "Prédiction SARIMA effectuée avec succès",
-                "methode" : "SARIMA",
+                "methode": "SARIMA",
                 "meilleurs_parametres": {
                     "order": best_params[0],
                     "seasonal_order": best_params[1]
@@ -153,13 +337,165 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
                 "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
                 "valeurs": forecast.tolist(),
                 "donnees_historiques": {
-                    "dates": df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
-                    "valeurs": df["Valeur"].tolist()
+                    "dates": df.index.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+                    "valeurs": df["valeur"].tolist()
+                }
             }
-            }
+
+            # last_prediction_result ={ 
+            #     "message": "Prédiction SARIMA effectuée avec succès",
+            #     "methode" : "SARIMA",
+            #     "meilleurs_parametres": {
+            #         "order": best_params[0],
+            #         "seasonal_order": best_params[1]
+            #     },
+            #     "criteres_information": {
+            #         "AIC": round(best_results.aic, 2),
+            #         "BIC": round(best_results.bic, 2)
+            #     },
+            #     "dates_predit": {
+            #         "debut": forecast_dates[0].strftime("%Y-%m-%d"),
+            #         "fin": forecast_dates[-1].strftime("%Y-%m-%d")
+            #     },
+            #     "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+            #     "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #     "valeurs": forecast.tolist(),
+            #     "donnees_historiques": {
+            #         "dates": df.index.dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #         "valeurs": df["valeur"].tolist()
+            # }
+            # }
         
             return JSONResponse(content=last_prediction_result)
+        # print("Exemple de consommation :", consommations[0])
+        # print("Type de consommation :", type(consommations[0]))
+        # # Regroupement manuel (ex: par 3)
+        # grouped_data = grouper_par_periode(consommations ,periode)
+
+        # # Transformation en DataFrame
+        # df = pd.DataFrame(grouped_data, columns=["date", "valeur"])
+        # df["date"] = pd.to_datetime(df["date"])
+        # df = df.sort_values("date")
+        # serie = df.set_index("date")["valeur"]
+        # freq_config = {
+        #     3: ("Q", 4),
+        #     12: ("A", 1),
+        #     "default": ("M", 12)
+        # }
+        # forecast_freq, seasonal_period = freq_config.get(periode, freq_config["default"])
+
+        # if type_modele == "sarima":
+
+        #     # Configuration SARIMA
+        #     p = d = q = range(0, 2)
+        #     pdq = list(product(p, d, q))
+        #     P = D = Q = range(0, 2)
+        #     seasonal_pdq = list(product(P, D, Q, [seasonal_period]))
+
+        #     # Recherche du meilleur modèle
+        #     best_rmse = float("inf")
+        #     best_model = None
+        #     best_params = None
+        #     best_results = None
+
+        #     train_size = int(len(serie) * 0.8)
+        #     train, test = serie[:train_size], serie[train_size:]
+
+        #     for param in pdq:
+        #         for seasonal_param in seasonal_pdq:
+        #             try:
+        #                 model = SARIMAX(
+        #                     train, 
+        #                     order=param, 
+        #                     seasonal_order=seasonal_param,
+        #                     enforce_stationarity=False,
+        #                     enforce_invertibility=False
+        #                 )
+        #                 results = model.fit(disp=False)
+        #                 pred = results.get_prediction(
+        #                     start=len(train),
+        #                     end=len(train) + len(test) - 1
+        #                 )
+        #                 rmse = np.sqrt(mean_squared_error(test, pred.predicted_mean))
+
+        #                 if rmse < best_rmse:
+        #                     best_rmse = rmse
+        #                     best_model = results
+        #                     best_params = (param, seasonal_param)
+        #                     best_results = results
+        #             except Exception as e:
+        #                 print(f"Erreur avec params {param},{seasonal_param}: {str(e)}")
+        #                 continue
+
+        #     # # Prévisions
+        #     # forecast_steps = 4 if periode == 3 else (3 if periode == 12 else 12)
+        #     # forecast = best_model.forecast(steps=forecast_steps)
+            
+        #     # last_date = serie.index[-1]
+        #     # forecast_dates = pd.date_range(
+        #     #     start=last_date + pd.DateOffset(**{"months": 3} if periode == 3 else {"years": 1} if periode == 12 else {"months": 1}),
+        #     #     periods=forecast_steps,
+        #     #     freq=forecast_freq
+        #     # )
+        #     forecast_steps = 4 if periode == 3 else (3 if periode == 12 else 12)
+        #     forecast = best_model.forecast(steps=forecast_steps)
+
+        #     last_date = serie.index[-1]
+        #     forecast_dates = pd.date_range(
+        #         start=last_date + pd.DateOffset(months=3) if periode == 3 else
+        #               last_date + pd.DateOffset(years=1) if periode == 12 else
+        #               last_date + pd.DateOffset(months=1),
+        #         periods=forecast_steps,
+        #         freq=forecast_freq
+        #     )
+
+        #     mape = None
+        #     if len(test) >= periode:
+        #         try:
+        #             preds = best_model.get_prediction(start=len(train), end=len(train) + periode - 1)
+        #             mape = mean_absolute_percentage_error(test[:periode], preds.predicted_mean)
+        #         except:
+        #             pass
+
+        #     # Calcul MAPE
+        #     mape = None
+        #     if len(test) >= periode:
+        #         try:
+        #             preds = best_model.get_prediction(
+        #                 start=len(train),
+        #                 end=len(train) + periode - 1
+        #             )
+        #             mape = mean_absolute_percentage_error(test[:periode], preds.predicted_mean)
+        #         except Exception as e:
+        #             print(f"Erreur calcul MAPE: {str(e)}")
+
+        #     # Préparation de la réponse
+        #     last_prediction_result = {
+        #         "message": "Prédiction SARIMA effectuée avec succès",
+        #         "methode": "SARIMA",
+        #         "meilleurs_parametres": {
+        #             "order": best_params[0],
+        #             "seasonal_order": best_params[1]
+        #         },
+        #         "criteres_information": {
+        #             "AIC": round(best_results.aic, 2),
+        #             "BIC": round(best_results.bic, 2),
+        #             "RMSE": round(best_rmse, 2)
+        #         },
+        #         "dates_predit": {
+        #             "debut": forecast_dates[0].strftime("%Y-%m-%d"),
+        #             "fin": forecast_dates[-1].strftime("%Y-%m-%d")
+        #         },
+        #         "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+        #         "dates": [d.strftime("%Y-%m-%d") for d in forecast_dates],
+        #         "valeurs": forecast.tolist(),
+        #         "donnees_historiques": {
+        #             "dates": df["date"].dt.strftime("%Y-%m-%d").tolist(),
+        #             "valeurs": df["valeur"].tolist()
+        #         }
+        #     }
         
+        #     return JSONResponse(content=last_prediction_result)
         elif type_modele == "arima" :
              # Lire le contenu du fichier CSV
 
@@ -175,8 +511,8 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
             best_params = None
             best_results = None
 
-            train_size = int(len(serie) * 0.8)
-            train, test = serie[:train_size], serie[train_size:]
+            train_size = int(len(df) * 0.8)
+            train, test = df[:train_size], df[train_size:]
 
             for param in pdq:
 
@@ -196,7 +532,7 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
 
             # # Prédiction avec le meilleur modèle
             forecast = best_model.forecast(steps=periode)
-            forecast_dates = pd.date_range(start=df["Date"].iloc[-1] + pd.Timedelta(hours=1), periods=periode, freq='H')
+            forecast_dates = pd.date_range(start=df["date"].iloc[-1] + pd.Timedelta(hours=1), periods=periode, freq='H')
             
             # forecast = best_model.forecast(steps=periode)
             # forecast_dates = pd.date_range(start=df["Date"].iloc[-1] + pd.Timedelta(days=1), periods=periode, freq='D')
@@ -216,7 +552,7 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
                     "order": best_params
                 },
                 "methode" : "ARIMA",
-                "serie_originale": serie.tolist() ,
+                "serie_originale": df.tolist() ,
                 "criteres_information": {
                     "AIC": round(best_results.aic, 2),
                     "BIC": round(best_results.bic, 2)
@@ -356,6 +692,13 @@ async def predict_sarima(periode: int = Form(...), fichier: UploadFile = File(..
 #     global last_prediction_result
     
 
+             
+            
+        
+    except Exception as e:
+        return JSONResponse(status_code=500, content={
+            "message": f"Erreur lors de la prédiction : {str(e)}"
+        })
 
 @router.get("/last_prediction")
 async def get_last_prediction():
