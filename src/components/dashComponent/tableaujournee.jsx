@@ -5,7 +5,7 @@ export default function TableauJournee({ data }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const filteredData = data.filter(item => 
-    isSameDay(parseISO(item.datetime), selectedDate)
+    isSameDay(parseISO(item.date), selectedDate)
   );
 
   return (
@@ -16,7 +16,7 @@ export default function TableauJournee({ data }) {
         type="date" 
         value={format(selectedDate, 'yyyy-MM-dd')} 
         onChange={(e) => {
-          const selected = e.target.value;
+          const selected = e.target.valeur;
           const [year, month, day] = selected.split('-');
           setSelectedDate(new Date(year, month - 1, day)); // mois - 1 car JavaScript commence à 0
         }}
@@ -36,8 +36,8 @@ export default function TableauJournee({ data }) {
             {filteredData.length > 0 ? (
               filteredData.map((item, index) => (
                 <tr key={index} className="text-center">
-                  <td className="py-2 px-4 border">{format(parseISO(item.datetime), 'HH:mm')}</td>
-                  <td className="py-2 px-4 border">{item.value}</td>
+                  <td className="py-2 px-4 border">{format(parseISO(item.date), 'HH:mm')}</td>
+                  <td className="py-2 px-4 border">{item.valeur}</td>
                 </tr>
               ))
             ) : (

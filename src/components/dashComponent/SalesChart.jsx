@@ -5,15 +5,17 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
+import { min } from 'date-fns';
 
 export default function SalesChart({ data }) {
   const chartRef = useRef();
   const dropdownRef = useRef();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const minValue = Math.min(...data.map(item => item.value));
-  const minDomain = minValue > 0 ? minValue * 0.9 : minValue * 1.1;
-
+  const minValeur = Math.min(...data.map(item => item.valeur));
+  
+  const minDomain = minValeur > 0 ? minValeur * 0.9 : minValeur * 1.1;
+  console.log("a verifier", data);
   const toggleDropdown = () => setDropdownOpen(prev => !prev);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export default function SalesChart({ data }) {
   const downloadCSV = () => {
     let csvContent = "Date,Valeur\n";
     data.forEach(row => {
-      csvContent += `${row.datetime},${row.value}\n`;
+      csvContent += `${row.date},${row.valeur}\n`;
     });
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'donnees.csv');
@@ -73,15 +75,14 @@ export default function SalesChart({ data }) {
           <button
             onClick={toggleDropdown}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition duration-200"
-            // className="px-4 py-2 bg-[#7C4585] text-white rounded-lg hover:bg-indigo-500 transition duration-200"
+          // className="px-4 py-2 bg-[#7C4585] text-white rounded-lg hover:bg-indigo-500 transition duration-200"
           >
             Télécharger
           </button>
 
           <div
-            className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg transform transition-all duration-200 origin-top ${
-              dropdownOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
-            } z-20`}
+            className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg transform transition-all duration-200 origin-top ${dropdownOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
+              } z-20`}
           >
             <button
               onClick={() => handleDownload('csv')}
@@ -105,7 +106,7 @@ export default function SalesChart({ data }) {
         </div>
       </div>
 
-      {/* <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
           <defs>
             <linearGradient id="colorValeur" x1="0" y1="0" x2="0" y2="1">
@@ -114,12 +115,12 @@ export default function SalesChart({ data }) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="datetime" />
+          <XAxis dataKey="date" />
           <YAxis domain={[minDomain, 'auto']} />
           <Tooltip />
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="valeur"
             stroke="#8884d8"
             activeDot={{ r: 8 }}
             strokeWidth={2}
@@ -127,84 +128,12 @@ export default function SalesChart({ data }) {
           />
           <Area
             type="monotone"
-            dataKey="value"
+            dataKey="valeur"
             stroke="none"
             fill="url(#colorValeur)"
           />
         </LineChart>
-      </ResponsiveContainer> */}
-      <ResponsiveContainer width="100%" height={340}>
-  <LineChart data={data}>
-    <defs>
-      <linearGradient id="warmGradient" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ff6b35" stopOpacity={0.7} />
-        <stop offset="100%" stopColor="#ff6b35" stopOpacity={0} />
-      </linearGradient>
-      <filter id="fireGlow">
-        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#ff6b35" />
-      </filter>
-    </defs>
-
-    <CartesianGrid stroke="#4b3a2f" strokeDasharray="5 5" />
-
-    <XAxis
-      dataKey="datetime"
-      stroke="#f4e1d2"
-      tick={{ fontSize: 14, fill: '#f4e1d2', fontWeight: 600 }}
-      axisLine={{ stroke: '#7a5c4f' }}
-      tickLine={{ stroke: '#7a5c4f' }}
-    />
-
-    <YAxis
-      domain={[minDomain, 'auto']}
-      stroke="#f4e1d2"
-      tick={{ fontSize: 14, fill: '#f4e1d2', fontWeight: 600 }}
-      axisLine={{ stroke: '#7a5c4f' }}
-      tickLine={{ stroke: '#7a5c4f' }}
-    />
-
-    <Tooltip
-      contentStyle={{
-        background: '#2e1f1a',
-        border: '1px solid #ff6b35',
-        color: '#fefae0',
-        borderRadius: 10,
-        fontSize: 14,
-        boxShadow: '0 0 15px #ff6b35',
-      }}
-      labelStyle={{ color: '#fb923c', fontWeight: 'bold' }}
-      itemStyle={{ color: '#fdba74' }}
-    />
-
-    <Line
-      type="monotone"
-      dataKey="value"
-      stroke="#ff6b35"
-      strokeWidth={4}
-      dot={{
-        r: 6,
-        fill: '#2e1f1a',
-        stroke: '#ff6b35',
-        strokeWidth: 3,
-        filter: 'url(#fireGlow)',
-      }}
-      activeDot={{
-        r: 9,
-        stroke: '#fb923c',
-        strokeWidth: 4,
-        fill: '#2e1f1a',
-        filter: 'url(#fireGlow)',
-      }}
-    />
-
-    <Area
-      type="monotone"
-      dataKey="value"
-      stroke="none"
-      fill="url(#warmGradient)"
-    />
-  </LineChart>
-</ResponsiveContainer>
+      </ResponsiveContainer>
 
     </div>
   );

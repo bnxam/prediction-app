@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 
 export default function ModalSarima({ onClose , onPredictionDone }) {
-  const [period, setPeriod] = useState('');
-  const [file, setFile] = useState(null);
+  const [period, setPeriod] = useState(1);
+  // const [file, setFile] = useState(null);
 
   const handleValidate = async () => {
     const formData = new FormData();
     // formData.append("type_modele", selectedMethod);
-    formData.append("periode", period);
-    if (file) {
-      formData.append("fichier", file);
-      console.log(file)
-    }
+    formData.append("periode", parseInt(period));
+    // if (file) {
+    //   formData.append("fichier", file);
+    //   console.log(file)
+    // }
     formData.append("type_modele", "sarima");
 
     try {
@@ -42,8 +42,8 @@ export default function ModalSarima({ onClose , onPredictionDone }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Période:', period);
-    console.log('Fichier importé:', file);
+    console.log('Période:', parseInt(period));
+    // console.log('Fichier importé:', file);
     // Tu pourras déclencher l'appel à l'API ici plus tard
   };
 
@@ -73,14 +73,13 @@ export default function ModalSarima({ onClose , onPredictionDone }) {
               required
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
             >
-              <option value="">-- Sélectionnez une période --</option>
-              <option value={30}>Mois (30 jours)</option>
-              <option value={90}>Trimestre (90 jours)</option>
-              <option value={365}>Année (365 jours)</option>
+              <option value={1}>Mois</option>
+              <option value={4}>Trimestre</option>
+              <option value={12}>Année</option>
             </select>
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Importer un fichier CSV ou Excel</label>
             <input
               type="file"
@@ -89,7 +88,7 @@ export default function ModalSarima({ onClose , onPredictionDone }) {
               required
               className="w-full"
             />
-          </div>
+          </div> */}
 
           <div className="flex justify-between items-center">
             <button

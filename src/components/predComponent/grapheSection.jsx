@@ -15,6 +15,8 @@ const GrapheSection = () => {
   const [predictionDone, setPredictionDone] = useState(false);
   const [selectedModel, setSelectedModel] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [historicalData, setHistoricalData] = useState([]);
+  const [predictionData, setPredictionData] = useState([]);
 
   const handleModelChange = (e) => {
     const model = e.target.value;
@@ -37,35 +39,76 @@ const GrapheSection = () => {
   const [data, setData] = useState([]);
   const [dataCom, setDataCom] = useState([]);
   const chartRef = useRef(null);
-
+  const [minDomain, setMinDomain] = useState(0); // Valeur initiale à 0
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch('http://localhost:8000/last_prediction');
         const json = await res.json();
-
-        if (json.dates && json.valeurs) {
-          // Créer un tableau combiné pour les prédictions
-          const combined = json.dates.map((date, index) => ({
-            Date: date,
-            Valeur: json.valeurs[index],
-            Type: 'prediction' // Pour distinguer les prédictions
+        if (json.dates && json.valeurs && json.donnees_historiques) {
+          // Transformation optimale pour le graphique
+          const historical = json.donnees_historiques.dates.map((date, index) => ({
+            date: date,
+            valeur: json.donnees_historiques.valeurs[index],
+            type: 'historical'
           }));
 
-          // Créer un tableau combiné pour les données historiques si elles existent
-          const historique = json.donnees_historiques ?
-            json.donnees_historiques.dates.map((dateH, index) => ({
-              Date: dateH,
-              Valeur: json.donnees_historiques.valeurs[index],
-              Type: 'historique' // Pour distinguer les données historiques
-            })) : [];
+          const predictions = json.dates.map((date, index) => ({
+            date: date,
+            valeur: json.valeurs[index],
+            type: 'prediction'
+          }));
 
-          // Combiner les deux tableaux (historique + prédictions)
-          // const combined = [...historique, ...predictions];
+          // Calcul du minDomain basé sur les deux jeux de données
+          const allValues = [
+            ...historical.map(item => item.valeur),
+            ...predictions.map(item => item.valeur)
+          ];
+          const minValue = Math.min(...allValues);
+          const calculatedMinDomain = minValue > 0 ? minValue * 0.9 : 0;
+
+          // Envoi au graphique exactement ce qu'il attend
+          setData(historical);
+          setDataCom(predictions);
+          setMinDomain(calculatedMinDomain);
+          // if (json.dates && json.valeurs) {
+          // Créer un tableau combiné pour les prédictions
+          // const combined = json.dates.map((date, index) => ({
+          //   Date: date,
+          //   Valeur: json.valeurs[index],
+          //   Type: 'prediction' // Pour distinguer les prédictions
+          // }));
+
+          // // Créer un tableau combiné pour les données historiques si elles existent
+          // // const historique = json.donnees_historiques ?
+          // //   json.donnees_historiques.dates.map((dateH, index) => ({
+          // //     Date: dateH,
+          // //     Valeur: json.donnees_historiques.valeurs[index],
+          // //     Type: 'historique' // Pour distinguer les données historiques
+          // //   })) : [];
+
+          // // Combiner les deux tableaux (historique + prédictions)
+          // // const combined = [...historique, ...predictions];
 
 
-          setDataCom(combined);
-          setData(predictions);
+          // // setDataCom(combined);
+          // setData(combined);
+          // Calculer le domaine minimum pour l'axe Y
+
+          // Préparer les données de prédiction
+          // const predictions = json.dates.map((date, index) => ({
+          //   date: date,
+          //   valeur: json.valeurs[index]
+          // }));
+
+          // // Format des données historiques
+          // const historique = json.donnees_historiques.dates.map((date, index) => ({
+          //   date: date,
+          //   valeur: json.donnees_historiques.valeurs[index]
+          // }));
+
+          // setData(historique);      // données réelles
+          // setDataCom(predictions);  // prédictions
 
           setMetaInfo({
             methode: json.methode,
@@ -82,7 +125,8 @@ const GrapheSection = () => {
             }
           });
           setPredictionDone(true);
-
+            console.log("anka igemouged les données predites ",predictions);
+            console.log("ou wihi win historique ",historical);
         } else {
           console.warn("Aucune donnée de prédiction trouvée.");
         }
@@ -150,9 +194,9 @@ const GrapheSection = () => {
 
 
 
-  const minValue = Math.min(...data.map(item => item.value));
-  // Optionnel: Ajouter une marge en dessous de la valeur minimale
-  const minDomain = minValue > 0 ? minValue * 0.5 : minValue * 1.1;
+  // const minValue = Math.min(...data.map(item => item.value));
+  // // Optionnel: Ajouter une marge en dessous de la valeur minimale
+  // const minDomain = minValue > 0 ? minValue * 0.5 : minValue * 1.1;
 
 
   return (
@@ -172,7 +216,7 @@ const GrapheSection = () => {
           <div ref={chartRef} className="mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
             {displayMode === 'graph' ? (
 
-              <Graphique data={data} minDomain={minDomain} chartRef={chartRef} />
+              <Graphique data={data} predictions={dataCom} minDomain={minDomain} chartRef={chartRef} />
             ) : (
 
               <Tableau data={data} />
@@ -180,12 +224,12 @@ const GrapheSection = () => {
           </div>
 
         </div>
-        <div className="flex flex-col md:flex-row gap-4 w-full">
+        {/* <div className="flex flex-col md:flex-row gap-4 w-full">
           <div className="flex-1 mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full">
               <div>
                 <h2 className="text-l mb-2 text-blue-950">Graphique Comparatif </h2>
-                {/* <p className="text-gray-500">Visualisez vos résultats ici.</p> */}
+                <p className="text-gray-500">Visualisez vos résultats ici.</p> 
               </div>
             </div>
             <Comparaison data={dataCom} minDomain={minDomain} chartRef={chartRef} />
@@ -193,11 +237,11 @@ const GrapheSection = () => {
           <div className="flex-1 mt-8 w-full min-h-72 bg-white p-4 rounded-lg style={{ backgroundColor: 'white' }}  ">
             <div>
               <h2 className="text-l mb-2 text-blue-950">Graphique Générale </h2>
-              {/* <p className="text-gray-500">Visualisez vos résultats ici.</p> */}
+           <p className="text-gray-500">Visualisez vos résultats ici.</p> 
             </div>
             <GeneralGraphesection data={dataCom} minDomain={minDomain} chartRef={chartRef} />
           </div>
-        </div>
+        </div> */}
       </>
 
       }

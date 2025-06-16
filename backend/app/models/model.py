@@ -30,9 +30,9 @@ class Admin(Base):
 #     date_naissance = Column(Date)
 #     telephone = Column(String)
 #     typeC = Column(String)
-
-
 #     consommations = relationship("Consommation", back_populates="client")
+
+
 class User(Base):
     __tablename__ = "users"
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 
-// Composants
 import CustomSidebar from '../components/CustomSidebar';
 import ClientSearch from '../components/clientComponent/ClientSearch';
 import ClientTable from '../components/clientComponent/ClientTable';
@@ -49,50 +48,6 @@ const Clients = () => {
         return data;
     }
 
-
-    // const filteredUsers = users.filter((user) =>
-    //     user.nom.toLowerCase().includes(search.toLowerCase())
-    // );
-
-    // const handleAddUser = (newUser) => {
-    //     const newId = users.length + 1;
-    //     setUsers([
-    //         ...users,
-    //         { 
-    //             id: newId, 
-    //             ...newUser, 
-    //             photodeprofil: newUser.photodeprofil || 'https://example.com/default.jpg',
-    //             data: generateDummyData() 
-    //         },
-    //     ]);
-    // };
-
-    // CE QUI ETE AJOUTE POUR LE BACKEND 
-
-    // const handleAddUser = async (newUser) => {
-    //     try {
-    //         const response = await axios.post('http://localhost:8000/users/', newUser);
-    //         const addedUser = response.data;
-
-    //         setUsers((prev) => [
-    //             ...prev,
-    //             {
-    //                 ...addedUser,
-    //                 photodeprofil: addedUser.photodeprofil || 'https://example.com/default.jpg',
-    //                 data: generateDummyData(),
-    //             },
-    //         ]);
-    //     } catch (error) {
-    //         if (error.response) {
-    //             console.error('Erreur serveur:', error.response.data);
-    //             alert(`Erreur : ${error.response.data.detail}`);
-    //         } else {
-    //             console.error('Erreur réseau:', error.message);
-    //             alert('Erreur réseau : ' + error.message);
-    //         }
-    //     }
-    // };
-
     const handleAddUser = (newUser) => {
         console.log("Les infos à sauvegarder :", newUser);
 
@@ -109,22 +64,7 @@ const Clients = () => {
                 }
             });
     };
-    // const handleAddUser = (newUser) => {
-    //     console.log("les info a saver",newUser);
-    //     axios.post('http://127.0.0.1:8000/users/', newUser)
-    //         .then(() => {
-
-    //             // Recharge tous les utilisateurs depuis l’API
-    //             return axios.get('http://127.0.0.1:8000/users/');
-
-    //         })
-    //         .then(response => {
-    //             setUsers(response.data);
-    //         })
-    //         .catch(error => {
-    //             console.error("Erreur lors de l'ajout :", error);
-    //         });
-    // };
+    
 
     // modification du user 
     const handleEdit = (userId) => {
@@ -159,30 +99,13 @@ const Clients = () => {
         try {
             // Récupère les données réelles depuis l'API
             const response = await axios.get(`http://localhost:8000/users/${user.id}`);
+            console.log(response)
             setViewUser(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des données:", error);
-            // Fallback sur les données fictives si nécessaire
-            // setViewUser({
-            //     ...user,
-            //     data: generateDummyData(),
-            //     predictions: generateDummyData().map(d => ({ ...d, valeur: d.valeur + 10 }))
-            // });
         }
     };
-    // const handleViewUserData = (user) => {
-    //     const data = generateDummyData();
-    //     const predictions = generateDummyData().map(d => ({
-    //         ...d,
-    //         valeur: d.valeur + 10, // pour voir la différence
-    //     }));
-
-    //     setViewUser({
-    //         ...user,
-    //         data,
-    //         predictions,
-    //     });
-    // };
+   
 
     console.log("Utilisateurs reçus depuis l'API :", users);
 
