@@ -14,7 +14,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 # JWT et sécurité
 SECRET_KEY = "admin-secret-key"  # À sécuriser via .env
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 365  # 1 an aussi
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -51,7 +51,7 @@ from typing import Optional, Union  # Ajout de Union pour les autres types
 # --- Paramètres JWT ---
 SECRET_KEY = "votre_clé_secrète_super_longue"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 365  # 1 an par exemple
 
 # --- Sécurité et hash ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
