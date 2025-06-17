@@ -32,7 +32,9 @@ warnings.filterwarnings("ignore")
 def predict_lstm(data_list,nb_predict =4, sequence_length=3):
     
     # Étape 1 : Extraire les valeurs
-    valeurs = [item['valeur'] for item in data_list]
+    # valeurs = [item['valeur'] for item in data_list]
+    valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
+
     
     if len(valeurs) < sequence_length + 1:
         raise ValueError("Pas assez de données pour entraîner le modèle")
@@ -277,7 +279,7 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             pdq = list(product(p, d, q))
             P= D = Q = range(0, 2)
             # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
-            seasonal_pdq = list(product(P, D, Q, [6]))
+            seasonal_pdq = list(product(P, D, Q, [12]))
 
             best_rmse = float("inf")
             best_model = None

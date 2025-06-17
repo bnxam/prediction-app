@@ -46,12 +46,12 @@ from datetime import date
 from typing import List
 
 class ConsommationCreate(BaseModel):
-    valeur: float
+    valeur: Optional[float]
     date: date
     
 class ConsommationGroupeeResponse(BaseModel):
     date: date
-    valeur: float
+    valeur: Optional[float]
 
 class ConsommationResponse(BaseModel):
     id: int
@@ -69,7 +69,7 @@ class UserCreate(BaseModel):
     date_naissance: date
     email: EmailStr
     mdp: str
-    consommations: List[ConsommationCreate]
+    consommations: Optional[List[ConsommationCreate]] = None
 
 
 class UserResponse(BaseModel):
