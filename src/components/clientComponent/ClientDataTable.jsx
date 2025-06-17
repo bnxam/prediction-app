@@ -47,7 +47,11 @@ const ClientDataTable = ({ data }) => {
           {data.map((item, index) => (
             <tr key={index} className="border-t hover:bg-gray-50">
               <td className="p-3">{formatDate(item.date)}</td>
-              <td className="p-3">{item.valeur.toFixed(2)}</td>
+              <td className="p-3">
+                {item.valeur !== null && item.valeur !== undefined
+                  ? item.valeur.toFixed(2)
+                  : "—"}
+              </td>
             </tr>
           ))}
         </tbody>

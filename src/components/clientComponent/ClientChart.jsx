@@ -148,7 +148,7 @@ const ClientChart = ({ data = [], predictions = [] }) => {
             dot={{ r: 4, fill: "#1e3a8a" }}
             activeDot={{ r: 6 }}
             name="Données réelles"
-            connectNulls
+            connectNulls={false}
           />
 
           {/* Prédictions */}

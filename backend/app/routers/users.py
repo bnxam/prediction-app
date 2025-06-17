@@ -7,6 +7,8 @@ from passlib.context import CryptContext
 from app.routers.auth import get_current_user
 from app.models.model import User ,Consommation
 from app.routers.prediction import predict_lstm
+import math
+
 # from app.models import User
   # Tu dois avoir cette dépendance définie dans auth.py
 router = APIRouter(
@@ -16,6 +18,13 @@ router = APIRouter(
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ✅ Mettre cette route EN PREMIER
+
+def clean_data(data):
+    for item in data:
+        if "valeur" in item and (item["valeur"] is not None):
+            if math.isnan(item["valeur"]) or math.isinf(item["valeur"]):
+                item["valeur"] = None
+    return data
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_data(current_user: User = Depends(get_current_user)):
     return current_user
@@ -68,9 +77,10 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-
     if user.consommations:
         for conso in user.consommations:
+            print(conso.valeur)
+            print(conso.date)
             db_cons = Consommation(
                 valeur=conso.valeur,
                 date=conso.date,
@@ -123,27 +133,38 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         
         # Somme des 3 valeurs consécutives (ou moins si fin de liste)
         for j in range(i, min(i + 3, len(consommations))):
-            somme_valeur += consommations[j].valeur
+            if consommations[j].valeur is not None:
+                somme_valeur += consommations[j].valeur
         
         # Ajouter le groupe au résultat
-        grouped_data.append({
-            "date": date_groupe,
-            "valeur": somme_valeur
-        })
+        # grouped_data.append({
+        #     "date": date_groupe,
+        #     "valeur": somme_valeur
+        # })
+
+        if somme_valeur == 0:
+            grouped_data.append({
+                "date": date_groupe,
+                "valeur": None
+            })
+        else:
+            grouped_data.append({
+                "date": date_groupe,
+                "valeur": somme_valeur
+            })
         
         # Passer au prochain groupe de 3
         i += 3
         s += 1
     predictions = predict_lstm(grouped_data,4)
+
+    grouped_data = clean_data(grouped_data)
+    predictions = clean_data(predictions)
     return {
         **user.__dict__,
         "data": grouped_data,
         "predictions": predictions
     }
-    # return {
-    #     **user.__dict__,
-    #     "data": [{"date": c.date.isoformat(), "valeur": c.valeur} for c in consommations]
-    # }
 
 # Update user
 @router.put("/{user_id}", response_model=UserResponse)

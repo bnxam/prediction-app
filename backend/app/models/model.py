@@ -56,7 +56,7 @@ class Consommation(Base):
     __tablename__ = "consommation"
 
     id = Column(Integer, primary_key=True, index=True)
-    valeur = Column(Float)
+    valeur = Column(Float , nullable=True)
     date = Column(Date)
 
     client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
