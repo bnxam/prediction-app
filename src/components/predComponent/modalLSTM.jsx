@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 
 export default function ModalLSTM({ onClose, onPredictionDone }) {
-  const [period, setPeriod] = useState('');
-  const [file, setFile] = useState(null);
+  const [period, setPeriod] = useState(1);
 
   const handleValidate = async () => {
     const formData = new FormData();
     // formData.append("type_modele", selectedMethod);
     formData.append("periode", period);
-    if (file) {
-      formData.append("fichier", file);
-      console.log(file)
-    }
     formData.append("type_modele", "lstm");
 
     try {
@@ -43,7 +38,6 @@ export default function ModalLSTM({ onClose, onPredictionDone }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Période:', period);
-    console.log('Fichier importé:', file);
     // Tu pourras déclencher l'appel à l'API ici plus tard
   };
 
@@ -80,16 +74,7 @@ export default function ModalLSTM({ onClose, onPredictionDone }) {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Importer un fichier CSV ou Excel</label>
-            <input
-              type="file"
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              onChange={(e) => setFile(e.target.files[0])}
-              required
-              className="w-full"
-            />
-          </div>
+          
 
           <div className="flex justify-between items-center">
             <button
