@@ -235,36 +235,46 @@ import SidebarClient from '../components/SidebarClient';
 import CartesInfoClient from '../components/dashclientComponent/CartesInfoClient';
 import SalesChartClient from '../components/dashclientComponent/SalesChartClient';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function DashboardClient() {
+    const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-
-    // Génération des données (fictives ici)
-    // function generateDummyData() {
-    //     const data = [
-    //         { month: '2025-01', value: 100 },
-    //         { month: '2025-02', value: 200 },
-    //         { month: '2025-03', value: 180 },
-    //         { month: '2025-04', value: 220 },
-    //     ];
-
-    //     const predictions = [
-    //         { month: '2025-05', value: 240 },
-    //         { month: '2025-06', value: 260 },
-    //     ];
-
-    //     return { data, predictions };
-    // }
-
-    // const { data, predictions } = generateDummyData();
     const [data, setData] = useState([]);
     const [predictions, setPredictions] = useState([]);
 
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const token = localStorage.getItem('token'); // ou sessionStorage selon ton app
+    //             const response = await axios.get('http://localhost:8000/users/me/data', {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                 },
+    //             });
+
+    //             setData(response.data.data || []);
+    //             setPredictions(response.data.predictions || []);
+    //         } catch (error) {
+    //             console.error('Erreur lors du chargement des données du client:', error);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, []);
     useEffect(() => {
+        const role = localStorage.getItem('role');
+        const token = localStorage.getItem('token');
+
+        if (role !== 'client' || !token) {
+            navigate('/'); // Redirige vers l'accueil si non autorisé
+            return;
+        }
+
         const fetchData = async () => {
             try {
-                const token = localStorage.getItem('token'); // ou sessionStorage selon ton app
                 const response = await axios.get('http://localhost:8000/users/me/data', {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -279,7 +289,7 @@ export default function DashboardClient() {
         };
 
         fetchData();
-    }, []);
+    }, [navigate]);
 
 
     // Fusion des données pour le graphique et les téléchargements
@@ -288,9 +298,9 @@ export default function DashboardClient() {
     //     ...predictions.map(p => ({ month: p.month, realValue: null, predictedValue: p.value })),
     // ];
     const allData = [
-    ...data.map(d => ({ month: d.date || d.month, realValue: d.valeur || d.value, predictedValue: null })),
-    ...predictions.map(p => ({ month: p.date || p.month, realValue: null, predictedValue: p.valeur || p.value })),
-];
+        ...data.map(d => ({ month: d.date || d.month, realValue: d.valeur || d.value, predictedValue: null })),
+        ...predictions.map(p => ({ month: p.date || p.month, realValue: null, predictedValue: p.valeur || p.value })),
+    ];
 
 
     // Gestion ouverture / fermeture dropdown
@@ -363,7 +373,7 @@ export default function DashboardClient() {
                 <SidebarClient />
             </ProSidebarProvider>
 
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 pt-[120px] overflow-auto">
                 {/* Cartes de statistiques */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl">
                     <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex items-center">

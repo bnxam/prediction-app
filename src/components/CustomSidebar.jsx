@@ -107,7 +107,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine, FaBars } from 'react-icons/fa';
 import { FaPeopleGroup } from 'react-icons/fa6';
-import LogoProfil from '../assets/images/portrait.jpg';
+import LogoProfil from '../assets/images/sonelgazLogo.jpg';
 import { Link, useLocation } from 'react-router-dom';
 
 function Navbar() {
@@ -128,7 +128,7 @@ function Navbar() {
     { path: '/dashboard', icon: <FaHome />, label: 'Dashboard' },
     { path: '/client', icon: <FaPeopleGroup />, label: 'Clients' },
     { path: '/prediction', icon: <FaChartLine />, label: 'Prédiction' },
-    { path: '/traitement', icon: <FaCog />, label: 'Traitement' },
+    // { path: '/traitement', icon: <FaCog />, label: 'Traitement' },
     { path: '/historique', icon: <FaClock />, label: 'Historique' },
   ];
 
@@ -141,7 +141,7 @@ function Navbar() {
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                MON APP
+                {/* MON APP */}
               </span>
             </div>
 

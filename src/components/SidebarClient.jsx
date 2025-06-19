@@ -65,7 +65,7 @@
 //           }}
 //         >
 //           <div style={{ height: '60px' }}></div>
-          
+
 //           {menuItems.map((item) => (
 //             <MenuItem 
 //               key={item.path}
@@ -105,12 +105,14 @@ import { FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine, FaBars } fro
 import { FaPeopleGroup } from 'react-icons/fa6';
 import LogoProfil from '../assets/images/portrait.jpg';
 import { Link, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function CustomNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768);
@@ -135,6 +137,14 @@ function CustomNavbar() {
     { path: '/profilclient', icon: <img src={LogoProfil} alt="Profil" className="w-6 h-6 rounded-full" />, label: 'Profil' },
     { path: '/dashboardclient', icon: <FaHome />, label: 'Dashboard' },
   ];
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
+    navigate("/"); // 🔁 Redirection vers la page d'accueil
+    window.location.reload(); // Pour réinitialiser tous les états React
+  };
+
 
   return (
     <>
@@ -145,7 +155,7 @@ function CustomNavbar() {
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                MON APP
+                {/* MON APP */}
               </span>
             </div>
 
@@ -169,12 +179,21 @@ function CustomNavbar() {
             </div>
 
             {/* Bouton Déconnexion Desktop */}
-            <div className="hidden md:block ml-4">
+            {/* <div className="hidden md:block ml-4">
               <button className="flex items-center px-4 py-2 rounded-full text-red-400 hover:bg-red-900/30 hover:text-white transition-all duration-300 group">
                 <FaSignOutAlt className="mr-2 group-hover:rotate-180 transition-transform" />
                 <span>Déconnexion</span>
               </button>
-            </div>
+            </div> */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-4 py-2 rounded-full text-red-400 hover:bg-red-900/30 hover:text-white transition-all duration-300 group"
+            >
+              <FaSignOutAlt className="mr-2 group-hover:rotate-180 transition-transform" />
+              <span>Déconnexion</span>
+            </button>
+
+
 
             {/* Menu Mobile Burger */}
             <div className="md:hidden flex items-center">
@@ -207,10 +226,22 @@ function CustomNavbar() {
                 </Link>
               ))}
               <div className="px-3 py-3">
-                <button className="flex items-center text-red-400 hover:text-white w-full">
+                {/* <button className="flex items-center text-red-400 hover:text-white w-full">
                   <FaSignOutAlt className="mr-3" />
                   Déconnexion
-                </button>
+                </button> */}
+                <button
+  onClick={() => {
+    setIsMobileMenuOpen(false);
+    handleLogout();
+  }}
+  className="flex items-center text-red-400 hover:text-white w-full"
+>
+  <FaSignOutAlt className="mr-3" />
+  Déconnexion
+</button>
+
+
               </div>
             </div>
           </div>
@@ -218,7 +249,7 @@ function CustomNavbar() {
       </nav>
 
       {/* Espace pour le contenu sous la navbar */}
-      <div className="pt-20"></div>
+      <div className="h-20"></div>
     </>
   );
 }

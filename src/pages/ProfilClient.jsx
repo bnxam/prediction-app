@@ -52,13 +52,38 @@ export default function ProfilClient() {
     //     }
     // }, []);
 
-    useEffect(() => {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-            return;
-        }
+    // useEffect(() => {
+    //     const savedUser = localStorage.getItem("user");
+    //     if (savedUser) {
+    //         setUser(JSON.parse(savedUser));
+    //         return;
+    //     }
 
+    //     const fetchUser = async () => {
+    //         const token = localStorage.getItem('token');
+    //         if (!token) return;
+
+    //         try {
+    //             const res = await axios.get('http://127.0.0.1:8000/users/me', {
+    //                 headers: { Authorization: `Bearer ${token}` },
+    //             });
+    //             localStorage.setItem("user", JSON.stringify(res.data));
+    //             setUser(res.data);
+    //         } catch (error) {
+    //             console.error("Erreur de chargement :", error);
+    //         }
+    //     };
+
+    //     fetchUser();
+    // }, []);
+    useEffect(() => {
+        const role = localStorage.getItem('role');
+        if (role !== 'client') {
+            navigate('/connexion');
+        }
+    }, []);
+
+    useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
             if (!token) return;
@@ -67,8 +92,7 @@ export default function ProfilClient() {
                 const res = await axios.get('http://127.0.0.1:8000/users/me', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                localStorage.setItem("user", JSON.stringify(res.data));
-                setUser(res.data);
+                setUser(res.data); // Ne plus utiliser localStorage
             } catch (error) {
                 console.error("Erreur de chargement :", error);
             }
@@ -77,14 +101,14 @@ export default function ProfilClient() {
         fetchUser();
     }, []);
 
-    if (!user) return <div className="p-8 text-red-500">Chargement... (ou erreur)</div>;
+    if (!user) return <div className="p-8 text-red-500"></div>;
 
     return (
         <div className="flex h-screen bg-gray-70">
             <ProSidebarProvider>
-                <SidebarClient />
+                <SidebarClient  />
             </ProSidebarProvider>
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 pt-[120px] overflow-auto">
                 <ProfilClientInfo user={user} />
             </div>
         </div>

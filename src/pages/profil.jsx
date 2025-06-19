@@ -159,7 +159,7 @@ export default function Profil() {
             <ProSidebarProvider>
                 <CustomSidebar />
             </ProSidebarProvider>
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 pt-[90px] overflow-auto">
                 <div className="flex border-b border-gray-200 mb-8">
                     <button
                         onClick={() => setActiveTab('profile')}

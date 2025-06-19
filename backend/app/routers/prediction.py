@@ -167,15 +167,19 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
     df["date"] = pd.to_datetime(df["date"])
     df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
 
+    if nb_predict == 4:
+
+        return result
     # Étape 14 : Retour des résultats complets pour last_prediction_result
-    return {
-        "resultats_prediction": result,
-        "forecast_dates": future_dates,
-        "forecast": predictions.tolist(),
-        "history": history,
-        "mape": mape,
-        "df": df
-    }
+    else : 
+        return {
+            "resultats_prediction": result,
+            "forecast_dates": future_dates,
+            "forecast": predictions.tolist(),
+            "history": history,
+            "mape": mape,
+            "df": df
+        }
 # ********************************
 # def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
 

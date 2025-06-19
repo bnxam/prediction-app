@@ -128,7 +128,7 @@ const Clients = () => {
                 <CustomSidebar />
             </ProSidebarProvider>
 
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 pt-[120px] overflow-auto">
                 <h1 className="text-xl font-semibold mb-4">
                     {viewUser ? `Données de l'utilisateur ${viewUser.nom}` : 'Liste des Utilisateurs'}
                 </h1>

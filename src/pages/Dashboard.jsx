@@ -61,7 +61,7 @@ export default function Dashboard() {
                 <CustomSidebar />
             </ProSidebarProvider>
 
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 pt-[120px] overflow-auto">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <Cartesinfo
                         title="Valeur minimale"

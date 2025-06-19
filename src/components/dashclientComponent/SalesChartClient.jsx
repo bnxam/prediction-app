@@ -212,7 +212,7 @@ const SalesChartClient = ({ data = [] }) => {
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
             name="Données réelles"
-            connectNulls
+            connectNulls={false}
           />
 
           {/* Prédictions */}
@@ -224,7 +224,7 @@ const SalesChartClient = ({ data = [] }) => {
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
             name="Prédictions"
-            connectNulls
+            connectNulls={false}
           />
         </LineChart>
       </ResponsiveContainer>

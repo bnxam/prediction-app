@@ -67,7 +67,7 @@ const Historique = () => {
         <CustomSidebar />
       </ProSidebarProvider>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 pt-[110px] overflow-auto">
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
           <div className="flex flex-col bg-[#FFF] p-6 rounded-l shadow-md">

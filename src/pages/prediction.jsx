@@ -17,7 +17,7 @@ const Prediction = () => {
       </ProSidebarProvider>
 
       {/* Contenu principal prend le reste */}
-      <div className="flex-1 p-8   overflow-auto bg-neutral-100">
+      <div className="flex-1 p-8 pt-[90px] overflow-auto bg-neutral-100">
         
 
 
