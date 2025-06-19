@@ -29,6 +29,50 @@ def clean_data(data):
 async def get_current_user_data(current_user: User = Depends(get_current_user)):
     return current_user
     #modification des informations du client par lui meme 
+# dihya cote client 
+@router.get("/me/data")
+async def get_my_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    consommations = db.query(Consommation).filter(Consommation.client_id == current_user.id).all()
+
+    grouped_data = []
+    s = 0
+    i = 0
+
+    while i < len(consommations):
+        somme_valeur = 0
+        date_groupe = consommations[i].date.isoformat()
+
+        for j in range(i, min(i + 3, len(consommations))):
+            if consommations[j].valeur is not None:
+                somme_valeur += consommations[j].valeur
+
+        if somme_valeur == 0:
+            grouped_data.append({
+                "date": date_groupe,
+                "valeur": None
+            })
+        else:
+            grouped_data.append({
+                "date": date_groupe,
+                "valeur": somme_valeur
+            })
+
+        i += 3
+        s += 1
+
+    grouped_data = clean_data(grouped_data)
+    predictions = predict_lstm(grouped_data, 4)
+    predictions = clean_data(predictions)
+
+    return {
+        "data": grouped_data,
+        "predictions": predictions
+    }
+
+
 @router.put("/me", response_model=UserResponse)
 def update_current_user(
     user_update: UserUpdate,

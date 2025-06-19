@@ -234,35 +234,64 @@ import { ProSidebarProvider } from 'react-pro-sidebar';
 import SidebarClient from '../components/SidebarClient';
 import CartesInfoClient from '../components/dashclientComponent/CartesInfoClient';
 import SalesChartClient from '../components/dashclientComponent/SalesChartClient';
+import axios from 'axios';
 
 export default function DashboardClient() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     // Génération des données (fictives ici)
-    function generateDummyData() {
-        const data = [
-            { month: '2025-01', value: 100 },
-            { month: '2025-02', value: 200 },
-            { month: '2025-03', value: 180 },
-            { month: '2025-04', value: 220 },
-        ];
+    // function generateDummyData() {
+    //     const data = [
+    //         { month: '2025-01', value: 100 },
+    //         { month: '2025-02', value: 200 },
+    //         { month: '2025-03', value: 180 },
+    //         { month: '2025-04', value: 220 },
+    //     ];
 
-        const predictions = [
-            { month: '2025-05', value: 240 },
-            { month: '2025-06', value: 260 },
-        ];
+    //     const predictions = [
+    //         { month: '2025-05', value: 240 },
+    //         { month: '2025-06', value: 260 },
+    //     ];
 
-        return { data, predictions };
-    }
+    //     return { data, predictions };
+    // }
 
-    const { data, predictions } = generateDummyData();
+    // const { data, predictions } = generateDummyData();
+    const [data, setData] = useState([]);
+    const [predictions, setPredictions] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token'); // ou sessionStorage selon ton app
+                const response = await axios.get('http://localhost:8000/users/me/data', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                setData(response.data.data || []);
+                setPredictions(response.data.predictions || []);
+            } catch (error) {
+                console.error('Erreur lors du chargement des données du client:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     // Fusion des données pour le graphique et les téléchargements
+    // const allData = [
+    //     ...data.map(d => ({ month: d.month, realValue: d.value, predictedValue: null })),
+    //     ...predictions.map(p => ({ month: p.month, realValue: null, predictedValue: p.value })),
+    // ];
     const allData = [
-        ...data.map(d => ({ month: d.month, realValue: d.value, predictedValue: null })),
-        ...predictions.map(p => ({ month: p.month, realValue: null, predictedValue: p.value })),
-    ];
+    ...data.map(d => ({ month: d.date || d.month, realValue: d.valeur || d.value, predictedValue: null })),
+    ...predictions.map(p => ({ month: p.date || p.month, realValue: null, predictedValue: p.valeur || p.value })),
+];
+
 
     // Gestion ouverture / fermeture dropdown
     const toggleDropdown = () => {
@@ -340,7 +369,7 @@ export default function DashboardClient() {
                     <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex items-center">
 
                         <h3 className="text-lg font-semibold text-gray-800">
-                           Les Statistiques Clés de mes consommations
+                            Les Statistiques Clés de mes consommations
                         </h3>
                     </div>
                     <div className="p-5">
