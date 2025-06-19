@@ -152,7 +152,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
                 "date": date_groupe,
                 "valeur": somme_valeur
             })
-        
+        print("cote n users",grouped_data)
         # Passer au prochain groupe de 3
         i += 3
         s += 1
