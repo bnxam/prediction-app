@@ -8,6 +8,8 @@ from app.routers.auth import get_current_user
 from app.models.model import User ,Consommation
 from app.routers.prediction import predict_lstm
 import math
+from sqlalchemy import func
+from app.routers.training import train_global_models
 
 # from app.models import User
   # Tu dois avoir cette dépendance définie dans auth.py
@@ -132,6 +134,9 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
             )
             db.add(db_cons)
         db.commit()
+
+    train_global_models(db)
+    
 
     return db_user
 

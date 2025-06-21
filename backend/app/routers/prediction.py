@@ -10,8 +10,9 @@ from itertools import product
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import warnings
 from app.database import get_db
-from app.models.model import Consommation
+from app.models.model import Consommation , Sarima , Arima
 from app.schemas.userSchema import ConsommationGroupeeResponse
+from app.schemas.prediction import SARIMAPredictionResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
@@ -429,7 +430,7 @@ def grouper_par_periode(consommations, periode):
 
 # methode post a refaire 
 
-@router.post("/predict")
+@router.post("/predict", response_model=SARIMAPredictionResponse)
 async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
     global last_prediction_result
     last_prediction_result = {}
@@ -457,63 +458,38 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
 
         if type_modele == "sarima" :
 
-            # Définir les plages de recherche pour SARIMA
-            p = d = q = range(0, 2)
-            pdq = list(product(p, d, q))
-            P= D = Q = range(0, 2)
-            # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
-            seasonal_pdq = list(product(P, D, Q, [12]))
+            # Récupération du dernier modèle SARIMA enregistré
+            sarima = db.query(Sarima).order_by(Sarima.id.desc()).first()
+            # if not sarima:
+            #     raise HTTPException(status_code=404, detail="Aucun modèle SARIMA trouvé en base.")
 
-            best_rmse = float("inf")
-            best_model = None
-            best_params = None
-            best_results = None
+            # Récupération des paramètres depuis la BDD
+            order = (sarima.p, sarima.d, sarima.q)
+            seasonal_order = (sarima.P, sarima.D, sarima.Q, sarima.s)
+            mape = sarima.mape
 
+            # Construction du modèle
+            model = SARIMAX(train, order=order, seasonal_order=seasonal_order,
+                            enforce_stationarity=False, enforce_invertibility=False)
+            results = model.fit(disp=False)
 
-            for param in pdq:
-                print("the seasonal param",param)
-                for seasonal_param in seasonal_pdq:
-                    try:
-                        model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
-                        results = model.fit(disp=False)
-                        pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
-                        
-                        rmse = np.sqrt(mean_squared_error(test, pred))
-
-                        if rmse < best_rmse:
-                            best_rmse = rmse
-                            best_model = results
-                            best_params = (param, seasonal_param)
-                            best_results = results
-                    except:
-                        continue
-
-        
-            forecast = best_model.forecast(steps=12)
+            # Prédiction
+            forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-          
 
-            # Calcul du taux d’erreur (MAPE)
-            if len(test) >= 12:
-                mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
-            else:
-                mape = None  # Pas assez de données pour MAPE
+            # Construction du résultat final
             last_prediction_result = {
                 "message": "Prédiction SARIMA effectuée avec succès",
                 "methode": "SARIMA",
                 "meilleurs_parametres": {
-                    "order": best_params[0],
-                    "seasonal_order": best_params[1]
-                },
-                "criteres_information": {
-                    "AIC": round(best_results.aic, 2),
-                    "BIC": round(best_results.bic, 2)
+                    "order": order,
+                    "seasonal_order": seasonal_order
                 },
                 "dates_predit": {
                     "debut": forecast_dates[0].strftime("%Y-%m-%d"),
                     "fin": forecast_dates[-1].strftime("%Y-%m-%d")
                 },
-                "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+                "taux_erreur_mape": round(mape, 2) if mape is not None else "Non calculé",
                 "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
                 "valeurs": forecast.tolist(),
                 "donnees_historiques": {
@@ -521,6 +497,72 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                     "valeurs": df["valeur"].tolist()
                 }
             }
+
+
+    #         # Définir les plages de recherche pour SARIMA
+    #         p = d = q = range(0, 2)
+    #         pdq = list(product(p, d, q))
+    #         P= D = Q = range(0, 2)
+    #         # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
+    #         seasonal_pdq = list(product(P, D, Q, [12]))
+
+    #         best_rmse = float("inf")
+    #         best_model = None
+    #         best_params = None
+    #         best_results = None
+
+
+    #         for param in pdq:
+    #             print("the seasonal param",param)
+    #             for seasonal_param in seasonal_pdq:
+    #                 try:
+    #                     model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
+    #                     results = model.fit(disp=False)
+    #                     pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
+                        
+    #                     rmse = np.sqrt(mean_squared_error(test, pred))
+
+    #                     if rmse < best_rmse:
+    #                         best_rmse = rmse
+    #                         best_model = results
+    #                         best_params = (param, seasonal_param)
+    #                         best_results = results
+    #                 except:
+    #                     continue
+
+        
+    #         forecast = best_model.forecast(steps=12)
+    #         forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
+          
+
+    #         # Calcul du taux d’erreur (MAPE)
+    #         if len(test) >= 12:
+    #             mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
+    #         else:
+    #             mape = None  # Pas assez de données pour MAPE
+            # last_prediction_result = {
+            #     "message": "Prédiction SARIMA effectuée avec succès",
+            #     "methode": "SARIMA",
+            #     "meilleurs_parametres": {
+            #         "order": best_params[0],
+            #         "seasonal_order": best_params[1]
+            #     },
+            #     # "criteres_information": {
+            #     #     "AIC": round(best_results.aic, 2),
+            #     #     "BIC": round(best_results.bic, 2)
+            #     # },
+            #     "dates_predit": {
+            #         "debut": forecast_dates[0].strftime("%Y-%m-%d"),
+            #         "fin": forecast_dates[-1].strftime("%Y-%m-%d")
+            #     },
+            #     "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+            #     "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #     "valeurs": forecast.tolist(),
+            #     "donnees_historiques": {
+            #         "dates": df.index.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #         "valeurs": df["valeur"].tolist()
+            #     }
+            # }
 
            
             return JSONResponse(content=last_prediction_result)
