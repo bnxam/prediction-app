@@ -103,7 +103,7 @@ const ClientTable = ({ users, onEdit, onDelete, onViewData }) => {
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <button
                     onClick={() => onViewData(user)}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-xs font-medium shadow hover:shadow-md transition-all hover:scale-105 active:scale-95"
+                    className="px-4 py-2 bg-[#fcce85] from-blue-500 to-blue-600 text-[#425f9e] rounded-xl text-xs font-medium shadow hover:shadow-md transition-all hover:scale-105 active:scale-95"
                   >
                     Visualiser les données
                   </button>
