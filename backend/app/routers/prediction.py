@@ -10,8 +10,9 @@ from itertools import product
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import warnings
 from app.database import get_db
-from app.models.model import Consommation
+from app.models.model import Consommation , Sarima , Arima
 from app.schemas.userSchema import ConsommationGroupeeResponse
+from app.schemas.prediction import SARIMAPredictionResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
@@ -92,7 +93,15 @@ warnings.filterwarnings("ignore")
 #     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
 #     print(result)
 #     return result
-def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2): 
+# from tensorflow.keras.models import Sequential
+# from tensorflow.keras.layers import LSTM, Dense
+# from tensorflow.keras.callbacks import EarlyStopping
+# from sklearn.preprocessing import MinMaxScaler
+# from sklearn.metrics import mean_absolute_percentage_error
+# import pandas as pd
+# import numpy as np
+
+def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
     # Étape 1 : Extraction des valeurs
     valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
 
@@ -105,6 +114,7 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
 
     # Étape 3 : Séparation train/test
     split_index = int(len(valeurs_scaled) * (1 - test_ratio))
+    print('alalalalala',split_index)
     train_scaled = valeurs_scaled[:split_index]
     test_scaled = valeurs_scaled[split_index - sequence_length:]
 
@@ -124,26 +134,34 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
     X_test = np.array(X_test)
     y_test = np.array(y_test)
 
-    # Étape 6 : Construction du modèle
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.LSTM(50, activation='relu', input_shape=(sequence_length, 1)))
-    model.add(tf.keras.layers.Dense(1))
-    model.compile(optimizer='adam', loss='mse')
+    # Étape 6 : Modèle LSTM avec 2 couches
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.LSTM(units=150, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
+        tf.keras.layers.LSTM(units=250),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
 
-    # Étape 7 : Entraînement du modèle
-    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=0)
+    # Étape 7 : Entraînement
+    history = model.fit(
+        X_train, y_train,
+        epochs=800,
+        batch_size=18,
+        validation_data=(X_test, y_test),
+        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)],
+        verbose=1
+    )
 
     # Étape 8 : Prédiction future
     pred_input = valeurs_scaled[-sequence_length:]
     predictions_scaled = []
-
     for _ in range(nb_predict):
         input_seq = pred_input.reshape(1, sequence_length, 1)
         pred = model.predict(input_seq, verbose=0)
         predictions_scaled.append(pred[0][0])
         pred_input = np.append(pred_input[1:], pred[0][0])
 
-    # Étape 9 : Dénormalisation des prédictions
+    # Étape 9 : Dénormalisation
     predictions = scaler.inverse_transform(np.array(predictions_scaled).reshape(-1, 1)).flatten()
 
     # Étape 10 : Génération des dates futures
@@ -153,25 +171,22 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
     else:
         future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
 
-    # Étape 11 : Format résultat principal
     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
 
-    # Étape 12 : Calcul du MAPE sur les données test
+    # Étape 11 : Évaluation MAPE
     y_test_pred = model.predict(X_test, verbose=0)
     y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
     y_test_pred_inv = scaler.inverse_transform(y_test_pred)
     mape = mean_absolute_percentage_error(y_test_inv, y_test_pred_inv)
 
-    # Étape 13 : Création du dataframe historique
+    # Étape 12 : DataFrame historique
     df = pd.DataFrame(data_list)
     df["date"] = pd.to_datetime(df["date"])
     df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
 
     if nb_predict == 4:
-
         return result
-    # Étape 14 : Retour des résultats complets pour last_prediction_result
-    else : 
+    else:
         return {
             "resultats_prediction": result,
             "forecast_dates": future_dates,
@@ -180,6 +195,98 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
             "mape": mape,
             "df": df
         }
+
+
+
+# ////////////////////////////////////
+# def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2): 
+#     # Étape 1 : Extraction des valeurs
+#     valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
+
+#     if len(valeurs) < sequence_length + 1:
+#         raise ValueError("Pas assez de données pour entraîner le modèle")
+
+#     # Étape 2 : Normalisation
+#     scaler = MinMaxScaler()
+#     valeurs_scaled = scaler.fit_transform(np.array(valeurs).reshape(-1, 1))
+
+#     # Étape 3 : Séparation train/test
+#     split_index = int(len(valeurs_scaled) * (1 - test_ratio))
+#     train_scaled = valeurs_scaled[:split_index]
+#     test_scaled = valeurs_scaled[split_index - sequence_length:]
+
+#     # Étape 4 : Séquences train
+#     X_train, y_train = [], []
+#     for i in range(len(train_scaled) - sequence_length):
+#         X_train.append(train_scaled[i:i + sequence_length])
+#         y_train.append(train_scaled[i + sequence_length])
+#     X_train = np.array(X_train)
+#     y_train = np.array(y_train)
+
+#     # Étape 5 : Séquences test
+#     X_test, y_test = [], []
+#     for i in range(len(test_scaled) - sequence_length):
+#         X_test.append(test_scaled[i:i + sequence_length])
+#         y_test.append(test_scaled[i + sequence_length])
+#     X_test = np.array(X_test)
+#     y_test = np.array(y_test)
+
+#     # Étape 6 : Construction du modèle
+#     model = tf.keras.models.Sequential()
+#     model.add(tf.keras.layers.LSTM(150, activation='tanh', input_shape=(sequence_length, 1)))
+#     model.add(tf.keras.layers.Dense(1))
+#     model.compile(optimizer='adam', loss='mse')
+
+#     # Étape 7 : Entraînement du modèle
+#     history = model.fit(X_train, y_train, epochs=70, batch_size=18, validation_data=(X_test, y_test), verbose=0)
+
+#     # Étape 8 : Prédiction future
+#     pred_input = valeurs_scaled[-sequence_length:]
+#     predictions_scaled = []
+
+#     for _ in range(nb_predict):
+#         input_seq = pred_input.reshape(1, sequence_length, 1)
+#         pred = model.predict(input_seq, verbose=0)
+#         predictions_scaled.append(pred[0][0])
+#         pred_input = np.append(pred_input[1:], pred[0][0])
+
+#     # Étape 9 : Dénormalisation des prédictions
+#     predictions = scaler.inverse_transform(np.array(predictions_scaled).reshape(-1, 1)).flatten()
+
+#     # Étape 10 : Génération des dates futures
+#     last_date = pd.to_datetime(data_list[-1]["date"])
+#     if nb_predict == 4:
+#         future_dates = [last_date + pd.DateOffset(months=3 * (i + 1)) for i in range(nb_predict)]
+#     else:
+#         future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
+
+#     # Étape 11 : Format résultat principal
+#     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
+
+#     # Étape 12 : Calcul du MAPE sur les données test
+#     y_test_pred = model.predict(X_test, verbose=0)
+#     y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
+#     y_test_pred_inv = scaler.inverse_transform(y_test_pred)
+#     mape = mean_absolute_percentage_error(y_test_inv, y_test_pred_inv)
+
+#     # Étape 13 : Création du dataframe historique
+#     df = pd.DataFrame(data_list)
+#     df["date"] = pd.to_datetime(df["date"])
+#     df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
+
+#     if nb_predict == 4:
+
+#         return result
+#     # Étape 14 : Retour des résultats complets pour last_prediction_result
+#     else : 
+#         return {
+#             "resultats_prediction": result,
+#             "forecast_dates": future_dates,
+#             "forecast": predictions.tolist(),
+#             "history": history,
+#             "mape": mape,
+#             "df": df
+#         }
 # ********************************
 # def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
 
@@ -323,7 +430,7 @@ def grouper_par_periode(consommations, periode):
 
 # methode post a refaire 
 
-@router.post("/predict")
+@router.post("/predict", response_model=SARIMAPredictionResponse)
 async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
     global last_prediction_result
     last_prediction_result = {}
@@ -346,68 +453,43 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
         df.set_index("date", inplace=True)
         
         
-        train_size = int(len(df) * 0.8)
+        train_size = int(len(df) * 0.7)
         train, test = df[:train_size], df[train_size:]
 
         if type_modele == "sarima" :
 
-            # Définir les plages de recherche pour SARIMA
-            p = d = q = range(0, 2)
-            pdq = list(product(p, d, q))
-            P= D = Q = range(0, 2)
-            # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
-            seasonal_pdq = list(product(P, D, Q, [12]))
+            # Récupération du dernier modèle SARIMA enregistré
+            sarima = db.query(Sarima).order_by(Sarima.id.desc()).first()
+            # if not sarima:
+            #     raise HTTPException(status_code=404, detail="Aucun modèle SARIMA trouvé en base.")
 
-            best_rmse = float("inf")
-            best_model = None
-            best_params = None
-            best_results = None
+            # Récupération des paramètres depuis la BDD
+            order = (sarima.p, sarima.d, sarima.q)
+            seasonal_order = (sarima.P, sarima.D, sarima.Q, sarima.s)
+            mape = sarima.mape
 
+            # Construction du modèle
+            model = SARIMAX(train, order=order, seasonal_order=seasonal_order,
+                            enforce_stationarity=False, enforce_invertibility=False)
+            results = model.fit(disp=False)
 
-            for param in pdq:
-                print("the seasonal param",param)
-                for seasonal_param in seasonal_pdq:
-                    try:
-                        model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
-                        results = model.fit(disp=False)
-                        pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
-                        
-                        rmse = np.sqrt(mean_squared_error(test, pred))
-
-                        if rmse < best_rmse:
-                            best_rmse = rmse
-                            best_model = results
-                            best_params = (param, seasonal_param)
-                            best_results = results
-                    except:
-                        continue
-
-        
-            forecast = best_model.forecast(steps=12)
+            # Prédiction
+            forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-          
 
-            # Calcul du taux d’erreur (MAPE)
-            if len(test) >= 12:
-                mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
-            else:
-                mape = None  # Pas assez de données pour MAPE
+            # Construction du résultat final
             last_prediction_result = {
                 "message": "Prédiction SARIMA effectuée avec succès",
                 "methode": "SARIMA",
                 "meilleurs_parametres": {
-                    "order": best_params[0],
-                    "seasonal_order": best_params[1]
-                },
-                "criteres_information": {
-                    "AIC": round(best_results.aic, 2),
-                    "BIC": round(best_results.bic, 2)
+                    "order": order,
+                    "seasonal_order": seasonal_order
                 },
                 "dates_predit": {
                     "debut": forecast_dates[0].strftime("%Y-%m-%d"),
                     "fin": forecast_dates[-1].strftime("%Y-%m-%d")
                 },
-                "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+                "taux_erreur_mape": round(mape, 2) if mape is not None else "Non calculé",
                 "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
                 "valeurs": forecast.tolist(),
                 "donnees_historiques": {
@@ -416,6 +498,72 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                 }
             }
 
+
+    #         # Définir les plages de recherche pour SARIMA
+    #         p = d = q = range(0, 2)
+    #         pdq = list(product(p, d, q))
+    #         P= D = Q = range(0, 2)
+    #         # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
+    #         seasonal_pdq = list(product(P, D, Q, [12]))
+
+    #         best_rmse = float("inf")
+    #         best_model = None
+    #         best_params = None
+    #         best_results = None
+
+
+    #         for param in pdq:
+    #             print("the seasonal param",param)
+    #             for seasonal_param in seasonal_pdq:
+    #                 try:
+    #                     model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
+    #                     results = model.fit(disp=False)
+    #                     pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
+                        
+    #                     rmse = np.sqrt(mean_squared_error(test, pred))
+
+    #                     if rmse < best_rmse:
+    #                         best_rmse = rmse
+    #                         best_model = results
+    #                         best_params = (param, seasonal_param)
+    #                         best_results = results
+    #                 except:
+    #                     continue
+
+        
+    #         forecast = best_model.forecast(steps=12)
+    #         forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
+          
+
+    #         # Calcul du taux d’erreur (MAPE)
+    #         if len(test) >= 12:
+    #             mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
+    #         else:
+    #             mape = None  # Pas assez de données pour MAPE
+            # last_prediction_result = {
+            #     "message": "Prédiction SARIMA effectuée avec succès",
+            #     "methode": "SARIMA",
+            #     "meilleurs_parametres": {
+            #         "order": best_params[0],
+            #         "seasonal_order": best_params[1]
+            #     },
+            #     # "criteres_information": {
+            #     #     "AIC": round(best_results.aic, 2),
+            #     #     "BIC": round(best_results.bic, 2)
+            #     # },
+            #     "dates_predit": {
+            #         "debut": forecast_dates[0].strftime("%Y-%m-%d"),
+            #         "fin": forecast_dates[-1].strftime("%Y-%m-%d")
+            #     },
+            #     "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+            #     "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #     "valeurs": forecast.tolist(),
+            #     "donnees_historiques": {
+            #         "dates": df.index.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #         "valeurs": df["valeur"].tolist()
+            #     }
+            # }
+
            
             return JSONResponse(content=last_prediction_result)
         
@@ -423,7 +571,7 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
 
             # Définir les plages de recherche pour SARIMA
             p = q = range(0, 4)
-            d = range(0, 2)
+            d = range(0, 3)
             pdq = list(product(p, d, q))
 
             best_rmse = float("inf")
