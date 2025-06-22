@@ -131,7 +131,7 @@ const Clients = () => {
 
             <div className="flex-1 p-8 pt-[120px] overflow-auto">
                 <h1 className="text-xl font-semibold mb-4">
-                    {viewUser ? `Données de l'utilisateur ${viewUser.nom}` : 'Liste des Utilisateurs'}
+                    {viewUser ? `Données de l'utilisateur ${viewUser.nom}` : ''}
                 </h1>
 
                 {!viewUser ? (
@@ -150,18 +150,11 @@ const Clients = () => {
                                 searchValue={search}
                                 onSearchChange={setSearch}
                                 onAddClient={() => setIsModalOpen(true)}
+                                clientsCount={users.length}
                             />
 
                             {/* Espace restant avec centrage du bloc client */}
-                            <div className="flex-1 flex justify-center">
-                                <div className="flex items-center gap-3 bg-gradient-to-r from-[#FFF4E2] to-[#FFEAC0] px-6 py-4 rounded-2xl border border-[#F0CC89] shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div className="w-4 h-4 rounded-full bg-[#8CBAA5]"></div>
-                                    <div>
-                                        <div className="text-[#3D455B] font-extrabold text-3xl leading-none">{users.length}</div>
-                                        <div className="text-[#8CBAA5] text-sm font-semibold tracking-wide">Clients enregistrés</div>
-                                    </div>
-                                </div>
-                            </div>
+                            
                         </div>
 
 

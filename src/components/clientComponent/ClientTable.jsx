@@ -3,9 +3,9 @@ import { Trash2, Pencil } from 'lucide-react';
 
 const ClientTable = ({ users, onEdit, onDelete, onViewData }) => {
   return (
-    <div className="overflow-x-auto rounded-xl shadow bg-white">
+    <div className="overflow-x-auto rounded-l shadow bg-white">
       <table className="min-w-full text-sm text-gray-700">
-        <thead className="bg-gray-100 text-left">
+        <thead className="bg-[#c9dde0] text-left">
         {/* <thead className="bg-[#FBF8EF] text-left"> */}
           <tr>
             <th className="p-4">ID</th>
@@ -35,14 +35,14 @@ const ClientTable = ({ users, onEdit, onDelete, onViewData }) => {
                 <div className="flex items-center gap-1 whitespace-nowrap">
                   <button
                     onClick={() => onViewData(user)}
-                    className="px-4 py-2 bg-[#fcce85] from-blue-500 to-blue-600 text-[#425f9e] rounded-xl text-xs font-medium shadow hover:shadow-md transition-all hover:scale-105 active:scale-95"
+                    className="px-4 py-2 bg-[#E9EDEE] from-blue-500 to-blue-600 text-[#425f9e] rounded-xl text-xs font-medium shadow hover:shadow-md transition-all hover:scale-105 active:scale-95"
                   >
                     Visualiser les données
                   </button>
 
                   <button
                     onClick={() => onEdit(user.id)}
-                    className="p-2 rounded-full hover:bg-yellow-100 text-yellow-600 transition-colors hover:rotate-12 hover:scale-110 active:scale-95"
+                    className="p-2 rounded-full hover:bg-green-100 text-green-600 transition-colors hover:rotate-12 hover:scale-110 active:scale-95"
                     title="Modifier"
                   >
                     <Pencil className="w-4 h-4" />
