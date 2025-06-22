@@ -8,7 +8,8 @@ export default function VolumeServiceChart({ data }) {
   const minDomain = minValue > 0 ? minValue * 0.9 : minValue * 1.1;
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md">
+    // <div className="bg-white p-6 rounded-2xl shadow-md">
+    <div>
       <h2 className="text-xl font-semibold text-gray-700 mb-4">Évolution des valeurs</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
@@ -22,3 +23,4 @@ export default function VolumeServiceChart({ data }) {
     </div>
   );
 }
+VolumeServiceChart.js
