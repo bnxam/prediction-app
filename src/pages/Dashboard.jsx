@@ -223,6 +223,8 @@ const Dashboard = () => {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    // le prix 
+    const [prixParMW, setPrixParMW] = useState(10); // par défaut 10 DA par MW
 
     useEffect(() => {
         const fetchData = async () => {
@@ -252,10 +254,13 @@ const Dashboard = () => {
             min: hasData ? Math.min(...valeurs) : 0,
             max: hasData ? Math.max(...valeurs) : 0,
             avg: hasData ? (valeurs.reduce((acc, val) => acc + val, 0) / valeurs.length) : 0
+
         };
     };
 
     const { min, max, avg } = calculateStats();
+    const prixTotal = data.reduce((total, item) => total + item.valeur * prixParMW, 0);
+
 
     if (isLoading) {
         return (
@@ -288,7 +293,7 @@ const Dashboard = () => {
                         {/* Info Cards */}
 
                         <div
-                            className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl relative overflow-hidden"
+                            className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl relative overflow-hidden"
                             style={{
                                 backgroundImage: `url(${fondcarteinfo})`,
                                 backgroundSize: "cover",
@@ -316,23 +321,41 @@ const Dashboard = () => {
                                 icon={<AvgIcon />}
                                 backgroundColor="bg-white/90 hover:bg-white"
                             />
+                            <div className="bg-white/90 hover:bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center min-h-[120px]">
+                                <div className="text-sm font-medium text-gray-600 mb-1 flex items-center justify-between">
+                                    💰 Prix total
+                                    <span className="text-xs font-normal text-gray-500">(DA)</span>
+                                </div>
+                                <div className="text-xl font-bold text-indigo-600">{prixTotal.toFixed(2)} DA</div>
+
+                                <div className="mt-3">
+                                    <label htmlFor="prix" className="text-xs text-gray-500">Tarif (DA / MW)</label>
+                                    <input
+                                        id="prix"
+                                        type="number"
+                                        step="0.1"
+                                        className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        value={prixParMW}
+                                        onChange={(e) => setPrixParMW(parseFloat(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+
                         </div>
 
                         {/* Sales Chart */}
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                             <SalesChart data={data} />
                         </div>
+                        {/* Tableau de la journée */}
+                        <TableauJournee data={data} />
+
                     </div>
 
                     {/* Right Column */}
                     <div className="space-y-6">
                         {/* Placeholder */}
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[160px]">
-                            <div className="text-gray-400 mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                            </div>
                             <CerclePourcentage />
                         </div>
 
