@@ -7,7 +7,7 @@ class DonneesHistoriques(BaseModel):
 
 class ParametresSARIMA(BaseModel):
     order: List[int]
-    seasonal_order: List[int]
+    seasonal_order: Optional[List[int]] 
 
 class DatesPrediction(BaseModel):
     debut: str

@@ -570,66 +570,68 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
         elif type_modele == "arima" :
 
             # Définir les plages de recherche pour SARIMA
-            p = q = range(0,1 )
-            p = range(1,2 )
-            d = range(0, 1)
-            pdq = list(product(p, d, q))
+            # p = q = range(0,1 )
+            # p = range(1,2 )
+            # d = range(0, 1)
+            # pdq = list(product(p, d, q))
 
-            best_rmse = float("inf")
-            best_model = None
-            best_params = None
-            best_results = None
+            # best_rmse = float("inf")
+            # best_model = None
+            # best_params = None
+            # best_results = None
 
 
-            for param in pdq:
+            # for param in pdq:
 
-                try:
-                    print("the param",param)
-                    model = ARIMA(train, order=param)
-                    results = model.fit()
-                    pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
-                    rmse = np.sqrt(mean_squared_error(test, pred))
+            #     try:
+            #         print("the param",param)
+            #         model = ARIMA(train, order=param)
+            #         results = model.fit()
+            #         pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
+            #         rmse = np.sqrt(mean_squared_error(test, pred))
 
-                    if rmse < best_rmse:
-                        best_rmse = rmse
-                        best_model = results
-                        best_params = param
-                        best_results = results
-                except:
-                    continue
-            if best_model is None:
-                raise ValueError("Aucun modèle ARIMA na réussi à sajuster.")
+            #         if rmse < best_rmse:
+            #             best_rmse = rmse
+            #             best_model = results
+            #             best_params = param
+            #             best_results = results
+            #     except:
+            #         continue
+            # if best_model is None:
+            #     raise ValueError("Aucun modèle ARIMA na réussi à sajuster.")
 
             # forecast = best_model.forecast(steps=12)
             # print("la valeur predite",forecast)
             # forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
             
-            forecast = best_model.forecast(steps=12)
+
+            arima = db.query(Arima).order_by(Arima.id.desc()).first()
+            order = (arima.p, arima.d, arima.q)
+            model = ARIMA(train, order=order)
+            results = model.fit()
+            forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-            
+            mape = arima.mape
             
             # forecast = best_model.forecast(steps=periode)
             # forecast_dates = pd.date_range(start=df["Date"].iloc[-1] + pd.Timedelta(days=1), periods=periode, freq='D')
 
 
             # Calcul du taux d’erreur (MAPE)
-            if len(test) >= periode:
-                mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
-            else:
-                mape = None  # Pas assez de données pour MAPE
-
+          
             last_prediction_result ={
                 "message": "Prédiction ARIMA effectuée avec succès",
                 "meilleurs_parametres": {
-                    "order": best_params
+                    "order": order,
+                    "seasonal_order": None,
                 },
                 "methode" : "ARIMA",
                 "serie_originale": df["valeur"].tolist(),
                 "criteres_information": {
-                    "AIC": round(best_results.aic, 2),
-                    "BIC": round(best_results.bic, 2)
+                    "AIC": round(results.aic, 2),
+                    "BIC": round(results.bic, 2)
                 },
-                "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
+                "taux_erreur_mape": mape ,
                 "datesp": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
                 "valeursp": forecast.tolist(),  # valeurs prédites
                 # "dates": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
