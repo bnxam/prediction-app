@@ -38,7 +38,7 @@ export default function Cartesinfo({ title, value, backgroundColor, icon }) {
         <h3 className="text-sm font-medium text-gray-600">{title}</h3>
       </div>
 
-      {value && <p className="text-2xl font-bold text-gray-900">{value}</p>}
+      {value && <p className="text-xl font-bold text-gray-700">{value}</p>}
     </div>
   );
 }

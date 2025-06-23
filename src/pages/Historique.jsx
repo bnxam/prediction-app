@@ -1,147 +1,8 @@
-// import React from 'react';
-// import CustomSidebar from '../components/CustomSidebar';
-// import { ProSidebarProvider } from 'react-pro-sidebar';
-// import { useNavigate } from 'react-router-dom';
-// // import { FaTrash } from 'react-icons/fa';
-// import { Trash2 } from 'lucide-react';  
-
-// const Historique = () => {
-//   const navigate = useNavigate();
-
-//   // Exemple de données - à remplacer par vos données réelles
-//   const [predictions, setPredictions] = React.useState([
-//     {
-//       id: 1,
-//       date: '01/01/2023',
-//       titre: 'titre',
-//       duree: '6 mois',
-//       methode: 'Random Forest',
-//       tauxErreur: '5.2%',
-//       status: 'En cours'
-//     },
-//     {
-//       id: 2,
-//       date: '15/02/2023',
-//       titre: 'titre',
-//       duree: '1 ans',
-//       methode: 'SVM',
-//       tauxErreur: '3.8%',
-//       status: 'En cours'
-//     },
-//     {
-//       id: 3,
-//       date: '10/03/2023',
-//       titre: 'titre',
-//       duree: '1 mois',
-//       methode: 'Réseau de neurones',
-//       tauxErreur: '7.1%',
-//       status: 'Finit'
-//     }
-//   ]);
-
-//   const handleRowClick = (predictionId) => {
-//     navigate(`/historique/${predictionId}`);
-//   };
-
-//   const handleDelete = (predictionId, e) => {
-//     e.stopPropagation(); // Empêche le déclenchement de handleRowClick
-//     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette prédiction ?')) {
-//       setPredictions(predictions.filter(pred => pred.id !== predictionId));
-//     }
-//   };
-
-//   const getStatusClass = (status) => {
-//     switch (status) {
-//       case 'Terminé':
-//         return 'bg-green-100 text-green-800';
-//       case 'En cours':
-//         return 'bg-blue-100 text-blue-800';
-//       case 'Échoué':
-//         return 'bg-red-100 text-red-800';
-//       case 'Finit':
-//         return 'bg-purple-100 text-purple-800';
-//       default:
-//         return 'bg-gray-100 text-gray-800';
-//     }
-//   };
-
-//   return (
-//     <div className="flex h-screen bg-gray-50">
-//       <ProSidebarProvider>
-//         <CustomSidebar />
-//       </ProSidebarProvider>
-
-//       <div className="flex-1 p-8 pt-[110px] overflow-auto">
-
-//         <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
-//           <div className="flex flex-col bg-[#FFF] p-6 rounded-l shadow-md">
-//             <label className="text-lg font-semibold mb-3 text-gray-700">Filtrer par année les prédictions dont vous avez efectuer</label>
-//             <select className="border border-gray-300 p-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition">
-//               <option>2023</option>
-//               <option>2024</option>
-//               <option>2025</option>
-//             </select>
-//           </div>
-//           <div className="overflow-x-auto rounded-l shadow bg-white">
-//             <table className="min-w-full text-sm text-gray-700">
-//               <thead className="bg-[#c9dde0] text-left">
-//                 <tr>
-//                   <th className="p-4">Date de prédiction</th>
-//                   <th className="p-4">Titre</th>
-//                   <th className="p-4">Durée</th>
-//                   <th className="p-4">Méthode</th>
-//                   <th className="p-4">Taux d'erreur</th>
-//                   <th className="p-4">Statut</th>
-//                   <th className="p-4">Actions</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {predictions.map((prediction) => (
-//                   <tr
-//                     key={prediction.id}
-//                     onClick={() => handleRowClick(prediction.id)}
-//                     className="hover:bg-[#F2F9FF] transition cursor-pointer"
-//                   >
-//                     <td className="p-4">{prediction.date}</td>
-//                     <td className="p-4">{prediction.titre}</td>
-//                     <td className="p-4">{prediction.duree}</td>
-//                     <td className="p-4">{prediction.methode}</td>
-//                     <td className="p-4">{prediction.tauxErreur}</td>
-//                     <td className="p-4">
-//                       <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusClass(prediction.status)}`}>
-//                         {prediction.status}
-//                       </span>
-//                     </td>
-//                     <td className="p-4">
-//                       <button
-//                         onClick={(e) => {
-//                           e.stopPropagation();
-//                           handleDelete(prediction.id);
-//                         }}
-//                         className="p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors hover:scale-110 active:scale-95"
-//                         title="Supprimer"
-//                       >
-//                         <Trash2 className="w-4 h-4" />
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Historique;
-
 import React from 'react';
 import CustomSidebar from '../components/CustomSidebar';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Trash2, Search } from 'lucide-react';
+import { ChevronDown, Trash2, Search, Eye } from 'lucide-react';
 
 const Historique = () => {
   const navigate = useNavigate();
@@ -151,7 +12,7 @@ const Historique = () => {
     {
       id: 1,
       date: '01/01/2023',
-      titre: 'Analyse marché Q1',
+      titre: 'Analyse marché Q1 ',
       duree: '6 mois',
       methode: 'Random Forest',
       tauxErreur: '5.2%',
@@ -272,7 +133,7 @@ const Historique = () => {
               <thead className="bg-[#c9dde0] text-left">
                 <tr>
                   <th className="p-4">Date</th>
-                  <th className="p-4">Titre</th>
+                  <th className="p-4 ">Titre</th>
                   <th className="p-4">Durée</th>
                   <th className="p-4">Méthode</th>
                   <th className="p-4">Précision</th>
@@ -289,7 +150,7 @@ const Historique = () => {
                       className="hover:bg-[#F2F9FF] transition cursor-pointer"
                     >
                       <td className="p-4">{prediction.date}</td>
-                      <td className="p-4 font-medium text-[#315B6D]">{prediction.titre}</td>
+                      <td className="p-4 font-medium max-w-[110px] truncate text-[#315B6D]">{prediction.titre}</td>
                       <td className="p-4">{prediction.duree}</td>
                       <td className="p-4 text-[#04CBEA]">{prediction.methode}</td>
                       <td className="p-4">{prediction.tauxErreur}</td>
@@ -299,6 +160,13 @@ const Historique = () => {
                         </span>
                       </td>
                       <td className="p-4">
+                        <button
+                          onClick={(e) => handleDelete(prediction.id, e)}
+                          className="p-2  rounded-full hover:bg-green-100 text-green-600 transition-colors hover:green-110 active:green-95"
+                          title="Visualiser"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={(e) => handleDelete(prediction.id, e)}
                           className="p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors hover:scale-110 active:scale-95"

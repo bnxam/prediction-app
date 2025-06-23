@@ -74,7 +74,7 @@ export default function SalesChart({ data }) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={toggleDropdown}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition duration-200"
+            className="px-4 py-2 bg-[#0085BA] text-white rounded-lg hover:bg-[#0085BA] transition duration-200"
           // className="px-4 py-2 bg-[#7C4585] text-white rounded-lg hover:bg-indigo-500 transition duration-200"
           >
             Télécharger

@@ -216,6 +216,9 @@ import VolumeServiceChart from '../components/dashComponent/VolumeServiceChart';
 import TableauJournee from '../components/dashComponent/tableaujournee';
 import fondcarteinfo from '../assets/images/fond carteinfo.jpg';
 import CerclePourcentage from '../components/dashComponent/CerclePourcentage';
+import { Wallet } from 'lucide-react';
+
+
 
 
 
@@ -323,10 +326,10 @@ const Dashboard = () => {
                             />
                             <div className="bg-white/90 hover:bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center min-h-[120px]">
                                 <div className="text-sm font-medium text-gray-600 mb-1 flex items-center justify-between">
-                                    💰 Prix total
+                                    <Wallet size={18} color="#4CAF50" /> Prix total
                                     <span className="text-xs font-normal text-gray-500">(DA)</span>
                                 </div>
-                                <div className="text-xl font-bold text-indigo-600">{prixTotal.toFixed(2)} DA</div>
+                                <div className="text-xl font-bold text-[#0085ba]">{prixTotal.toFixed(2)} DA</div>
 
                                 <div className="mt-3">
                                     <label htmlFor="prix" className="text-xs text-gray-500">Tarif (DA / MW)</label>

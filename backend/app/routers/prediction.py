@@ -570,8 +570,9 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
         elif type_modele == "arima" :
 
             # Définir les plages de recherche pour SARIMA
-            p = q = range(0, 4)
-            d = range(0, 3)
+            p = q = range(0,1 )
+            p = range(1,2 )
+            d = range(0, 1)
             pdq = list(product(p, d, q))
 
             best_rmse = float("inf")
