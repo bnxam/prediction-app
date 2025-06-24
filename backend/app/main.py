@@ -68,7 +68,7 @@
 
 
 from fastapi import FastAPI
-from app.routers import users, prediction, auth , dash
+from app.routers import users, prediction, auth , dash , historique
 from app.database import engine
 from app.models.model import Base
 # from app.models.models import Base 
@@ -102,6 +102,7 @@ app.include_router(users.router)
 app.include_router(prediction.router)
 app.include_router(admin.router)
 app.include_router(dash.router)
+app.include_router(historique.router)
 
 # # Dépendance pour la BDD
 # def get_db():
@@ -115,3 +116,5 @@ app.include_router(dash.router)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    

@@ -371,10 +371,26 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             # Prédiction
             forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-            somme_actuelle = sum(forecast)
-            somme_clients = db.query(func.sum(PointPredit.valeur_predite)).scalar() or 0
+            # 1. Charger la dernière prédiction SARIMA
+            last_prediction = db.query(Prediction)\
+                .filter(Prediction.typeC == "SARIMA")\
+                .order_by(Prediction.id.desc())\
+                .first()
 
-            if round(somme_actuelle, 2) != round(somme_clients, 2):
+            # 2. Récupérer ses points historiques
+            somme_historiques = 0
+            if last_prediction:
+                historiques = db.query(PointPredit)\
+                    .filter(PointPredit.prediction_id == last_prediction.id)\
+                    .filter(PointPredit.typep == "historique")\
+                    .all()
+                somme_historiques = sum(p.valeur_predite for p in historiques)
+
+            # 3. Calculer la somme des consommations actuelles
+            somme_actuelle = df["valeur"].sum()
+
+            # 4. Comparaison
+            if round(somme_actuelle, 2) != round(somme_historiques, 2):
                 # 4. Création de l'objet Prediction
                 prediction_obj = Prediction(
                     titre=None,
