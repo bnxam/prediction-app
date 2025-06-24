@@ -24,182 +24,167 @@ import datetime
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from collections import defaultdict
-
+from sklearn.metrics import mean_absolute_percentage_error
 router = APIRouter()
 
 # router = APIRouter()
 warnings.filterwarnings("ignore")
 
-# def predict_lstm(data_list,nb_predict, sequence_length=3):
-#     print(">>>> nb_predict reçu :", nb_predict)
-#     # Étape 1 : Extraire les valeurs
-#     # valeurs = [item['valeur'] for item in data_list]
-#     valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
+def predict_lstm(data_list, nb_predict, sequence_length=10):
+    # import numpy as np
+    # import pandas as pd
+    # from sklearn.preprocessing import MinMaxScaler
+    # from tensorflow.keras.models import Sequential
+    # from tensorflow.keras.layers import Input, LSTM, Dense
+    # from sklearn.metrics import mean_absolute_percentage_error
+    # import tensorflow as tf
 
-    
-#     if len(valeurs) < sequence_length + 1:
-#         raise ValueError("Pas assez de données pour entraîner le modèle")
+    # === 1. Construction du DataFrame ===
+    df = pd.DataFrame(data_list)
+    df["date"] = pd.to_datetime(df["date"])
+    df["valeur"] = df["valeur"].fillna(0)
 
-#     # Étape 2 : Normalisation
-#     scaler = MinMaxScaler()
-#     valeurs_scaled = scaler.fit_transform(np.array(valeurs).reshape(-1, 1))
+    df["month"] = df["date"].dt.month
+    df["year"] = df["date"].dt.year
+    df["quarter"] = df["date"].dt.quarter
 
-#     # Étape 3 : Créer les séquences X et y
-#     X = []
-#     y = []
-#     for i in range(len(valeurs_scaled) - sequence_length):
-#         X.append(valeurs_scaled[i:i+sequence_length])
-#         y.append(valeurs_scaled[i+sequence_length])
-    
-#     X = np.array(X)
-#     y = np.array(y)
+    # Encodage cyclique
+    df["month_sin"] = np.sin(2 * np.pi * df["month"] / 12)
+    df["month_cos"] = np.cos(2 * np.pi * df["month"] / 12)
+    df["quarter_sin"] = np.sin(2 * np.pi * df["quarter"] / 4)
+    df["quarter_cos"] = np.cos(2 * np.pi * df["quarter"] / 4)
 
-    
-#     # Étape 4 : Construire le modèle LSTM
-#     model = tf.keras.models.Sequential()
-#     model.add(tf.keras.layers.LSTM(50, activation='relu', input_shape=(sequence_length, 1)))
-#     model.add(tf.keras.layers.Dense(1))
-#     model.compile(optimizer='adam', loss='mse')
+    # Saisons
+    df["is_winter"] = df["month"].isin([12, 1, 2]).astype(int)
+    df["is_summer"] = df["month"].isin([6, 7, 8]).astype(int)
 
-#     # Étape 5 : Entraîner le modèle
-#     model.fit(X, y, epochs=50, verbose=0)
+    # Moyenne mobile et lags
+    df["moving_avg"] = df["valeur"].rolling(window=3).mean().fillna(method="bfill")
+    df["lag_1"] = df["valeur"].shift(1).fillna(method="bfill")
+    df["lag_3"] = df["valeur"].shift(3).fillna(method="bfill")
 
-#     # Étape 6 : Prédire les 3 prochaines valeurs
-#     pred_input = valeurs_scaled[-sequence_length:]  # Derniers points
-#     predictions = []
-    
-#     # for _ in range(nb_predict):
-#     #     input_seq = pred_input.reshape(1, sequence_length, 1)
-#     #     pred = model.predict(input_seq, verbose=0)
-#     #     predictions.append(pred[0][0])
-#     #     pred_input = np.append(pred_input[1:], pred[0][0])  # glisser la fenêtre
-#     for idx in range(nb_predict):
-#         print(f"Prédiction {idx+1} sur {nb_predict}")
-#         input_seq = pred_input.reshape(1, sequence_length, 1)
-#         pred = model.predict(input_seq, verbose=0)
-#         predictions.append(pred[0][0])
-#         pred_input = np.append(pred_input[1:], pred[0][0])
-#     # Étape 7 : Dénormalisation
-#     predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten()
-#     # Étape 8 : Générer les dates futures (trimestre suivant chaque fois)
-#     last_date_str = data_list[-1]["date"]
-#     last_date = pd.to_datetime(last_date_str)
-#     if nb_predict == 4:
-#         future_dates = [last_date + pd.DateOffset(months=3 * (i + 1)) for i in range(nb_predict)]
-#     else :
-#         future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
+    # Normalisation
+    scaler_val = MinMaxScaler()
+    df["valeur_scaled"] = scaler_val.fit_transform(df[["valeur"]])
+    df["year_scaled"] = MinMaxScaler().fit_transform(df[["year"]])
+    df["moving_avg_scaled"] = MinMaxScaler().fit_transform(df[["moving_avg"]])
+    df["lag_1_scaled"] = MinMaxScaler().fit_transform(df[["lag_1"]])
+    df["lag_3_scaled"] = MinMaxScaler().fit_transform(df[["lag_3"]])
 
-#     # Étape 9 : Retourner les résultats
-#     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
-#     print(result)
-#     return result
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import LSTM, Dense
-# from tensorflow.keras.callbacks import EarlyStopping
-# from sklearn.preprocessing import MinMaxScaler
-# from sklearn.metrics import mean_absolute_percentage_error
-# import pandas as pd
-# import numpy as np
+    # === 2. Séparation des features et target ===
+    features_cols = [
+        "valeur_scaled", "month_sin", "month_cos", "quarter_sin", "quarter_cos",
+        "is_winter", "is_summer", "year_scaled", "moving_avg_scaled",
+        "lag_1_scaled", "lag_3_scaled"
+    ]
+    features = df[features_cols].values
+    target = df["valeur_scaled"].values
 
-def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
-    # Étape 1 : Extraction des valeurs
-    valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
+    # === 3. Création des séquences ===
+    def create_sequences(features, targets, look_back):
+        X, y = [], []
+        for i in range(len(features) - look_back):
+            X.append(features[i:i + look_back])
+            y.append(targets[i + look_back])
+        return np.array(X), np.array(y)
 
-    if len(valeurs) < sequence_length + 1:
-        raise ValueError("Pas assez de données pour entraîner le modèle")
+    X, y = create_sequences(features, target, sequence_length)
 
-    # Étape 2 : Normalisation
-    scaler = MinMaxScaler()
-    valeurs_scaled = scaler.fit_transform(np.array(valeurs).reshape(-1, 1))
-
-    # Étape 3 : Séparation train/test
-    split_index = int(len(valeurs_scaled) * (1 - test_ratio))
-    print('alalalalala',split_index)
-    train_scaled = valeurs_scaled[:split_index]
-    test_scaled = valeurs_scaled[split_index - sequence_length:]
-
-    # Étape 4 : Séquences train
-    X_train, y_train = [], []
-    for i in range(len(train_scaled) - sequence_length):
-        X_train.append(train_scaled[i:i + sequence_length])
-        y_train.append(train_scaled[i + sequence_length])
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
-
-    # Étape 5 : Séquences test
-    X_test, y_test = [], []
-    for i in range(len(test_scaled) - sequence_length):
-        X_test.append(test_scaled[i:i + sequence_length])
-        y_test.append(test_scaled[i + sequence_length])
-    X_test = np.array(X_test)
-    y_test = np.array(y_test)
-
-    # Étape 6 : Modèle LSTM avec 2 couches
+    # === 4. Modèle LSTM ===
     model = tf.keras.models.Sequential([
-        tf.keras.layers.LSTM(units=150, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
-        tf.keras.layers.LSTM(units=250),
+        tf.keras.layers.Input(shape=(sequence_length, len(features_cols))),
+        tf.keras.layers.LSTM(108, return_sequences=True),
+        tf.keras.layers.LSTM(64, return_sequences=True),
+        tf.keras.layers.LSTM(64),
         tf.keras.layers.Dense(1)
     ])
     model.compile(optimizer='adam', loss='mean_squared_error')
+    # model.fit(X, y, epochs=100, batch_size=16, verbose=0)
+    history = model.fit(X, y, epochs=100, batch_size=16, verbose=0)
 
-    # Étape 7 : Entraînement
-    history = model.fit(
-        X_train, y_train,
-        epochs=800,
-        batch_size=18,
-        validation_data=(X_test, y_test),
-        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)],
-        verbose=1
-    )
+    # === 5. Prédictions futures ===
+    last_seq = features[-sequence_length:]
+    future_preds = []
+    future_dates = pd.date_range(df["date"].iloc[-1] + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
 
-    # Étape 8 : Prédiction future
-    pred_input = valeurs_scaled[-sequence_length:]
-    predictions_scaled = []
-    for _ in range(nb_predict):
-        input_seq = pred_input.reshape(1, sequence_length, 1)
-        pred = model.predict(input_seq, verbose=0)
-        predictions_scaled.append(pred[0][0])
-        pred_input = np.append(pred_input[1:], pred[0][0])
+    for date in future_dates:
+        month = date.month
+        quarter = ((month - 1) // 3) + 1
+        sin_m, cos_m = np.sin(2 * np.pi * month / 12), np.cos(2 * np.pi * month / 12)
+        sin_q, cos_q = np.sin(2 * np.pi * quarter / 4), np.cos(2 * np.pi * quarter / 4)
+        is_winter = int(month in [12, 1, 2])
+        is_summer = int(month in [6, 7, 8])
+        year_scaled = df["year_scaled"].iloc[-1]  # constante
 
-    # Étape 9 : Dénormalisation
-    predictions = scaler.inverse_transform(np.array(predictions_scaled).reshape(-1, 1)).flatten()
+        # Valeurs précédentes
+        last_val = future_preds[-1] if future_preds else target[-1]
+        lag_1, lag_3 = last_val, future_preds[-3] if len(future_preds) >= 3 else last_val
+        moving_avg = np.mean(future_preds[-3:]) if len(future_preds) >= 3 else last_val
 
-    # Étape 10 : Génération des dates futures
-    last_date = pd.to_datetime(data_list[-1]["date"])
-    if nb_predict == 4:
-        future_dates = [last_date + pd.DateOffset(months=3 * (i + 1)) for i in range(nb_predict)]
-    else:
-        future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
+        lag_1_scaled = df["lag_1_scaled"].mean()
+        lag_3_scaled = df["lag_3_scaled"].mean()
+        moving_avg_scaled = df["moving_avg_scaled"].mean()
 
-    result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
+        input_vector = [
+            last_val, sin_m, cos_m, sin_q, cos_q,
+            is_winter, is_summer, year_scaled,
+            moving_avg_scaled, lag_1_scaled, lag_3_scaled
+        ]
+        input_seq = np.vstack([last_seq[1:], input_vector])
+        input_seq = input_seq.reshape(1, sequence_length, len(features_cols))
 
-    # Étape 11 : Évaluation MAPE
-    y_test_pred = model.predict(X_test, verbose=0)
-    y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
-    y_test_pred_inv = scaler.inverse_transform(y_test_pred)
-    mape = mean_absolute_percentage_error(y_test_inv, y_test_pred_inv)
+        pred = model.predict(input_seq, verbose=0)[0, 0]
+        future_preds.append(pred)
+        last_seq = input_seq[0]
 
-    # Étape 12 : DataFrame historique
-    df = pd.DataFrame(data_list)
-    df["date"] = pd.to_datetime(df["date"])
-    df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
+    future_preds_inv = scaler_val.inverse_transform(np.array(future_preds).reshape(-1, 1)).flatten()
 
+    # === 6. MAPE
+    y_pred = model.predict(X, verbose=0)
+    y_true_inv = scaler_val.inverse_transform(y.reshape(-1, 1))
+    y_pred_inv = scaler_val.inverse_transform(y_pred)
+    mape = mean_absolute_percentage_error(y_true_inv, y_pred_inv)
+    # === 7. Retour
+    result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, future_preds_inv)]
+    df_result = df.copy()
+    # df_result = df_result.rename(columns={"date": "date", "valeur": "valeur"})
+
+    # print ("athaaaa",future_preds_inv.tolist())
+    print("resultats_prediction", result,
+            "forecast_dates", future_dates,
+            "forecast", future_preds_inv.tolist(),
+            "history", history,
+            "mape", mape,
+            "df", df)
     if nb_predict == 4:
         return result
     else:
+        # return {
+        #     "resultats_prediction": result,
+        #     "forecast_dates": future_dates,
+        #     "forecast": future_preds_inv.tolist(),
+        #     "mape": mape,
+        #     "df": df_result
+        # }
+        # return {
+        #     "resultats_prediction": result,
+        #     "forecast_dates": future_dates,
+        #     "forecast": future_preds_inv.tolist(),
+        #     "mape": mape,
+        #     "df": df_result,
+        #     "history": history  # ✅ <-- ajoute ceci
+        # }
         return {
             "resultats_prediction": result,
             "forecast_dates": future_dates,
-            "forecast": predictions.tolist(),
+            "forecast": future_preds_inv.tolist(),
             "history": history,
             "mape": mape,
             "df": df
         }
 
 
-
-# ////////////////////////////////////
-# def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2): 
+# def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 #     # Étape 1 : Extraction des valeurs
 #     valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
 
@@ -212,6 +197,7 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 
 #     # Étape 3 : Séparation train/test
 #     split_index = int(len(valeurs_scaled) * (1 - test_ratio))
+#     print('alalalalala',split_index)
 #     train_scaled = valeurs_scaled[:split_index]
 #     test_scaled = valeurs_scaled[split_index - sequence_length:]
 
@@ -231,26 +217,34 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 #     X_test = np.array(X_test)
 #     y_test = np.array(y_test)
 
-#     # Étape 6 : Construction du modèle
-#     model = tf.keras.models.Sequential()
-#     model.add(tf.keras.layers.LSTM(150, activation='tanh', input_shape=(sequence_length, 1)))
-#     model.add(tf.keras.layers.Dense(1))
-#     model.compile(optimizer='adam', loss='mse')
+#     # Étape 6 : Modèle LSTM avec 2 couches
+#     model = tf.keras.models.Sequential([
+#         tf.keras.layers.LSTM(units=150, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
+#         tf.keras.layers.LSTM(units=250),
+#         tf.keras.layers.Dense(1)
+#     ])
+#     model.compile(optimizer='adam', loss='mean_squared_error')
 
-#     # Étape 7 : Entraînement du modèle
-#     history = model.fit(X_train, y_train, epochs=70, batch_size=18, validation_data=(X_test, y_test), verbose=0)
+#     # Étape 7 : Entraînement
+#     history = model.fit(
+#         X_train, y_train,
+#         epochs=800,
+#         batch_size=18,
+#         validation_data=(X_test, y_test),
+#         callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)],
+#         verbose=1
+#     )
 
 #     # Étape 8 : Prédiction future
 #     pred_input = valeurs_scaled[-sequence_length:]
 #     predictions_scaled = []
-
 #     for _ in range(nb_predict):
 #         input_seq = pred_input.reshape(1, sequence_length, 1)
 #         pred = model.predict(input_seq, verbose=0)
 #         predictions_scaled.append(pred[0][0])
 #         pred_input = np.append(pred_input[1:], pred[0][0])
 
-#     # Étape 9 : Dénormalisation des prédictions
+#     # Étape 9 : Dénormalisation
 #     predictions = scaler.inverse_transform(np.array(predictions_scaled).reshape(-1, 1)).flatten()
 
 #     # Étape 10 : Génération des dates futures
@@ -260,118 +254,22 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 #     else:
 #         future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
 
-#     # Étape 11 : Format résultat principal
 #     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
 
-#     # Étape 12 : Calcul du MAPE sur les données test
+#     # Étape 11 : Évaluation MAPE
 #     y_test_pred = model.predict(X_test, verbose=0)
 #     y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
 #     y_test_pred_inv = scaler.inverse_transform(y_test_pred)
 #     mape = mean_absolute_percentage_error(y_test_inv, y_test_pred_inv)
 
-#     # Étape 13 : Création du dataframe historique
+#     # Étape 12 : DataFrame historique
 #     df = pd.DataFrame(data_list)
 #     df["date"] = pd.to_datetime(df["date"])
 #     df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
 
 #     if nb_predict == 4:
-
 #         return result
-#     # Étape 14 : Retour des résultats complets pour last_prediction_result
-#     else : 
-#         return {
-#             "resultats_prediction": result,
-#             "forecast_dates": future_dates,
-#             "forecast": predictions.tolist(),
-#             "history": history,
-#             "mape": mape,
-#             "df": df
-#         }
-# ********************************
-# def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.2):
-
-#     # Étape 1 : Extraire les valeurs en remplaçant les None par 0
-#     valeurs = [item['valeur'] if item['valeur'] is not None else 0 for item in data_list]
-
-#     if len(valeurs) < sequence_length + 1:
-#         raise ValueError("Pas assez de données pour entraîner le modèle")
-
-#     # Étape 2 : Normalisation
-#     scaler = MinMaxScaler()
-#     valeurs_scaled = scaler.fit_transform(np.array(valeurs).reshape(-1, 1))
-
-#     # Étape 3 : Séparation en train/test
-#     split_index = int(len(valeurs_scaled) * (1 - test_ratio))
-#     train_scaled = valeurs_scaled[:split_index]
-#     test_scaled = valeurs_scaled[split_index - sequence_length:]  # pour garder continuité
-
-#     # Étape 4 : Création des séquences pour l'entraînement
-#     X_train, y_train = [], []
-#     for i in range(len(train_scaled) - sequence_length):
-#         X_train.append(train_scaled[i:i + sequence_length])
-#         y_train.append(train_scaled[i + sequence_length])
-
-#     # Étape 5 : Création des séquences pour le test (pas utilisé ici mais utile si tu veux évaluer)
-#     X_test, y_test = [], []
-#     for i in range(len(test_scaled) - sequence_length):
-#         X_test.append(test_scaled[i:i + sequence_length])
-#         y_test.append(test_scaled[i + sequence_length])
-
-#     X_train = np.array(X_train)
-#     y_train = np.array(y_train)
-
-#     # Étape 6 : Construire le modèle LSTM
-#     model = tf.keras.models.Sequential()
-#     model.add(tf.keras.layers.LSTM(50, activation='relu', input_shape=(sequence_length, 1)))
-#     model.add(tf.keras.layers.Dense(1))
-#     model.compile(optimizer='adam', loss='mse')
-
-#     # Étape 7 : Entraîner le modèle
-#     history = model.fit(X_train, y_train, epochs=50, verbose=0)
-
-#     # Étape 8 : Prédire les futures valeurs
-#     pred_input = valeurs_scaled[-sequence_length:]
-#     predictions = []
-
-#     for idx in range(nb_predict):
-#         input_seq = pred_input.reshape(1, sequence_length, 1)
-#         pred = model.predict(input_seq, verbose=0)
-#         predictions.append(pred[0][0])
-#         pred_input = np.append(pred_input[1:], pred[0][0])
-
-#     # Étape 9 : Dénormalisation
-#     predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten()
-#     print("Prédiction",predictions)
-
-#     # Étape 10 : Génération des dates futures
-#     last_date_str = data_list[-1]["date"]
-#     last_date = pd.to_datetime(last_date_str)
-
-#     if nb_predict == 4:
-#         future_dates = [last_date + pd.DateOffset(months=3 * (i + 1)) for i in range(nb_predict)]
-#         result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
-
-#         return result
-
 #     else:
-#         future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
-#          # Étape 11 : Format résultat principal
-#         print("date future",future_dates)
-#         result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, predictions)]
-
-#         # Étape 12 : Calcul du MAPE sur les données test
-#         y_test_pred = model.predict(X_test, verbose=0)
-#         y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
-#         y_test_pred_inv = scaler.inverse_transform(y_test_pred)
-#         mape = mean_absolute_percentage_error(y_test_inv, y_test_pred_inv)
-#         print("le mape",mape)
-
-#         # Étape 13 : Création du dataframe historique
-#         df = pd.DataFrame(data_list)
-#         df["date"] = pd.to_datetime(df["date"])
-#         df = df.rename(columns={"date": "Date", "valeur": "Valeur"})
-#         print("**********",df)
-#         # Étape 14 : Retour des résultats complets pour last_prediction_result
 #         return {
 #             "resultats_prediction": result,
 #             "forecast_dates": future_dates,
@@ -380,10 +278,6 @@ def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 #             "mape": mape,
 #             "df": df
 #         }
-        
-    
-#     # Étape 11 : Format du résultat
-# *******************************
 
 def grouper_par_periode(consommations, periode):
     if periode == 1:
@@ -720,10 +614,45 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             data_list = df.reset_index()
             data_list['date'] = data_list['date'].astype(str)  # convertir les dates en chaînes
             data_list = data_list.to_dict(orient='records')    # [{'date': ..., 'valeur': ...}, {...}, ...]
-            
             # Ensuite, tu appelles :
             outputs = predict_lstm(data_list, nb_predict=12)
+            print("=========== DEBUG LSTM ===========")
+            print("✔️ Clés outputs :", outputs.keys())
 
+            # Vérifier 'history'
+            if "history" in outputs:
+                print("✔️ Clés history :", outputs["history"].history.keys())
+                print("✔️ Dernière loss :", outputs["history"].history['loss'][-1] if 'loss' in outputs["history"].history else "❌ 'loss' manquant")
+                print("✔️ Dernière val_loss :", outputs["history"].history.get('val_loss', ['❌ val_loss manquant'])[-1])
+            else:
+                print("❌ outputs['history'] manquant")
+
+            # Vérifier les forecast_dates
+            if "forecast_dates" in outputs:
+                print("✔️ forecast_dates :", outputs["forecast_dates"])
+                print("✔️ Début :", outputs["forecast_dates"][0])
+                print("✔️ Fin :", outputs["forecast_dates"][-1])
+            else:
+                print("❌ forecast_dates manquant")
+
+            # Vérifier forecast
+            print("✔️ forecast :", outputs.get("forecast", "❌ forecast manquant"))
+
+            # Vérifier mape
+            print("✔️ mape :", outputs.get("mape", "❌ mape manquant"))
+
+            # Vérifier df
+            if "df" in outputs:
+                print("✔️ df type :", type(outputs["df"]))
+                print("✔️ Colonnes df :", outputs["df"].columns)
+                print("✔️ Date dtype :", outputs["df"]['date'].dtype if 'date' in outputs["df"] else "❌ 'date' manquant")
+                print("✔️ Valeur dtype :", outputs["df"]['valeur'].dtype if 'valeur' in outputs["df"] else "❌ 'valeur' manquant")
+            else:
+                print("❌ df manquant")
+
+            print("=========== FIN DEBUG ===========")
+
+            history = outputs["history"].history
             last_prediction_result = {
                 "message": "Prédiction LSTM effectuée avec succès",
                 "methode": "LSTM",
@@ -738,8 +667,7 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                     "batch_size": 32
                 },
                 "performance": {
-                    "loss": outputs["history"].history['loss'][-1],
-                    "val_loss": outputs["history"].history['val_loss'][-1],
+                    "loss": history["loss"][-1],
                     "taux_erreur_mape": round(outputs["mape"] * 100, 2)
                 },
                 "dates_predit": {
@@ -749,10 +677,39 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                 "dates": [d.strftime("%Y-%m-%d %H:%M:%S") for d in outputs["forecast_dates"]],
                 "valeurs": outputs["forecast"],
                 "donnees_historiques": {
-                    "dates": outputs["df"]["Date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
-                    "valeurs": outputs["df"]["Valeur"].tolist()
+                    "dates": outputs["df"]["date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+                    "valeurs": outputs["df"]["valeur"].tolist()
                 }
             }
+
+            # last_prediction_result = {
+            #     "message": "Prédiction LSTM effectuée avec succès",
+            #     "methode": "LSTM",
+            #     "architecture": {
+            #         "couches": [
+            #             {"type": "LSTM", "units": 50},
+            #             {"type": "Dense", "units": 1}
+            #         ],
+            #         "optimizer": "adam",
+            #         "loss": "mean_squared_error",
+            #         "epochs": 50,
+            #         "batch_size": 32
+            #     },
+            #     "performance": {
+            #         # "loss": outputs["history"].history['loss'][-1],
+            #         "taux_erreur_mape": round(outputs["mape"] * 100, 2)
+            #     },
+            #     "dates_predit": {
+            #         "debut": outputs["forecast_dates"][0].strftime("%Y-%m-%d %H:%M:%S"),
+            #         "fin": outputs["forecast_dates"][-1].strftime("%Y-%m-%d %H:%M:%S")
+            #     },
+            #     "dates": [d.strftime("%Y-%m-%d %H:%M:%S") for d in outputs["forecast_dates"]],
+            #     "valeurs": outputs["forecast"],
+            #     "donnees_historiques": {
+            #         "dates": outputs["df"]["Date"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+            #         "valeurs": outputs["df"]["Valeur"].tolist()
+            #     }
+            # }
 
         
         return JSONResponse(content=last_prediction_result)
