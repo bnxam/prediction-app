@@ -18,15 +18,33 @@ const GrapheSection = () => {
   const [historicalData, setHistoricalData] = useState([]);
   const [predictionData, setPredictionData] = useState([]);
 
+  // const handleModelChange = (e) => {
+  //   const model = e.target.value;
+  //   setSelectedModel(model);
+  //   if (model) {
+  //     setShowModal(true);
+  //   } else {
+  //     setShowModal(false);
+  //   }
+  // };
   const handleModelChange = (e) => {
-    const model = e.target.value;
-    setSelectedModel(model);
-    if (model) {
-      setShowModal(true);
-    } else {
+    const value = e.target.value;
+
+    if (value === selectedModel) {
+      // Fermer et réouvrir pour forcer le refresh
       setShowModal(false);
+      setPredictionDone(true);
+      setTimeout(() => {
+        setShowModal(true);
+      }, 100); // attendre un tout petit peu
+    } else {
+      setSelectedModel(value);
+      setTimeout(() => {
+        setShowModal(true);
+      }, 100);
     }
   };
+
 
   const [metaInfo, setMetaInfo] = useState({
     dateDebut: null,
@@ -40,105 +58,129 @@ const GrapheSection = () => {
   const [dataCom, setDataCom] = useState([]);
   const chartRef = useRef(null);
   const [minDomain, setMinDomain] = useState(0); // Valeur initiale à 0
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const res = await fetch('http://localhost:8000/last_prediction');
+  //       const json = await res.json();
+  //       if (json.dates && json.valeurs && json.donnees_historiques) {
+  //         // Transformation optimale pour le graphique
+  //         const historical = json.donnees_historiques.dates.map((date, index) => ({
+  //           date: date,
+  //           valeur: json.donnees_historiques.valeurs[index],
+  //           type: 'historical'
+  //         }));
+
+  //         const predictions = json.dates.map((date, index) => ({
+  //           date: date,
+  //           valeur: json.valeurs[index],
+  //           type: 'prediction'
+  //         }));
+
+  //         // Calcul du minDomain basé sur les deux jeux de données
+  //         const allValues = [
+  //           ...historical.map(item => item.valeur),
+  //           ...predictions.map(item => item.valeur)
+  //         ];
+  //         const minValue = Math.min(...allValues);
+  //         const calculatedMinDomain = minValue > 0 ? minValue * 0.9 : 0;
+
+  //         // Envoi au graphique exactement ce qu'il attend
+  //         setData(historical);
+  //         setDataCom(predictions);
+  //         setMinDomain(calculatedMinDomain);
+  //         setMetaInfo({
+  //           methode: json.methode,
+  //           dateDebut: json.dates[0],
+  //           debut: json.dates_predit?.debut,
+  //           fin: json.dates_predit?.fin,
+  //           mape: json.taux_erreur_mape ?? json.performance?.taux_erreur_mape ?? null,
+  //           params: json.meilleurs_parametres ?? json.architecture ?? null,
+  //           criteresInfo: json.criteres_information ?? {
+  //             ...(json.performance && {
+  //               loss: json.performance.loss,
+  //               val_loss: json.performance.val_loss
+  //             })
+  //           }
+  //         });
+  //         setPredictionDone(true);
+  //         console.log("anka igemouged les données predites ", predictions);
+  //         console.log("ou wihi win historique ", historical);
+  //       } else {
+  //         console.warn("Aucune donnée de prédiction trouvée.");
+  //       }
+  //     } catch (err) {
+  //       console.error("Erreur lors du fetch :", err);
+  //     }
+  //   };
+
+  //   if (predictionDone) {
+  //     fetchData();
+  //     // setPredictionDone(false);
+  //   }
+  // }, [predictionDone]);
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('http://localhost:8000/last_prediction');
-        const json = await res.json();
-        if (json.dates && json.valeurs && json.donnees_historiques) {
-          // Transformation optimale pour le graphique
-          const historical = json.donnees_historiques.dates.map((date, index) => ({
-            date: date,
-            valeur: json.donnees_historiques.valeurs[index],
-            type: 'historical'
-          }));
+  const fetchData = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/last_prediction');
+      const json = await res.json();
 
-          const predictions = json.dates.map((date, index) => ({
-            date: date,
-            valeur: json.valeurs[index],
-            type: 'prediction'
-          }));
+      if (json.dates && json.valeurs && json.donnees_historiques) {
+        const historical = json.donnees_historiques.dates.map((date, index) => ({
+          date: date,
+          valeur: json.donnees_historiques.valeurs[index],
+          type: 'historical'
+        }));
 
-          // Calcul du minDomain basé sur les deux jeux de données
-          const allValues = [
-            ...historical.map(item => item.valeur),
-            ...predictions.map(item => item.valeur)
-          ];
-          const minValue = Math.min(...allValues);
-          const calculatedMinDomain = minValue > 0 ? minValue * 0.9 : 0;
+        const predictions = json.dates.map((date, index) => ({
+          date: date,
+          valeur: json.valeurs[index],
+          type: 'prediction'
+        }));
 
-          // Envoi au graphique exactement ce qu'il attend
-          setData(historical);
-          setDataCom(predictions);
-          setMinDomain(calculatedMinDomain);
-          // if (json.dates && json.valeurs) {
-          // Créer un tableau combiné pour les prédictions
-          // const combined = json.dates.map((date, index) => ({
-          //   Date: date,
-          //   Valeur: json.valeurs[index],
-          //   Type: 'prediction' // Pour distinguer les prédictions
-          // }));
+        const allValues = [
+          ...historical.map(item => item.valeur),
+          ...predictions.map(item => item.valeur)
+        ];
+        const minValue = Math.min(...allValues);
+        const calculatedMinDomain = minValue > 0 ? minValue * 0.9 : 0;
 
-          // // Créer un tableau combiné pour les données historiques si elles existent
-          // // const historique = json.donnees_historiques ?
-          // //   json.donnees_historiques.dates.map((dateH, index) => ({
-          // //     Date: dateH,
-          // //     Valeur: json.donnees_historiques.valeurs[index],
-          // //     Type: 'historique' // Pour distinguer les données historiques
-          // //   })) : [];
+        setData(historical);
+        setDataCom(predictions);
+        setMinDomain(calculatedMinDomain);
+        setMetaInfo({
+          methode: json.methode,
+          dateDebut: json.dates[0],
+          debut: json.dates_predit?.debut,
+          fin: json.dates_predit?.fin,
+          mape: json.taux_erreur_mape ?? json.performance?.taux_erreur_mape ?? null,
+          params: json.meilleurs_parametres ?? json.architecture ?? null,
+          criteresInfo: json.criteres_information ?? {
+            ...(json.performance && {
+              loss: json.performance.loss,
+              val_loss: json.performance.val_loss
+            })
+          }
+        });
 
-          // // Combiner les deux tableaux (historique + prédictions)
-          // // const combined = [...historique, ...predictions];
-
-
-          // // setDataCom(combined);
-          // setData(combined);
-          // Calculer le domaine minimum pour l'axe Y
-
-          // Préparer les données de prédiction
-          // const predictions = json.dates.map((date, index) => ({
-          //   date: date,
-          //   valeur: json.valeurs[index]
-          // }));
-
-          // // Format des données historiques
-          // const historique = json.donnees_historiques.dates.map((date, index) => ({
-          //   date: date,
-          //   valeur: json.donnees_historiques.valeurs[index]
-          // }));
-
-          // setData(historique);      // données réelles
-          // setDataCom(predictions);  // prédictions
-
-          setMetaInfo({
-            methode: json.methode,
-            dateDebut: json.dates[0],
-            debut: json.dates_predit?.debut,
-            fin: json.dates_predit?.fin,
-            mape: json.taux_erreur_mape ?? json.performance?.taux_erreur_mape ?? null,
-            params: json.meilleurs_parametres ?? json.architecture ?? null,
-            criteresInfo: json.criteres_information ?? {
-              ...(json.performance && {
-                loss: json.performance.loss,
-                val_loss: json.performance.val_loss
-              })
-            }
-          });
-          setPredictionDone(true);
-            console.log("anka igemouged les données predites ",predictions);
-            console.log("ou wihi win historique ",historical);
-        } else {
-          console.warn("Aucune donnée de prédiction trouvée.");
-        }
-      } catch (err) {
-        console.error("Erreur lors du fetch :", err);
+        console.log("anka igemouged les données predites ", predictions);
+        console.log("ou wihi win historique ", historical);
+      } else {
+        console.warn("Aucune donnée de prédiction trouvée.");
       }
-    };
-
-    if (predictionDone) {
-      fetchData();
+    } catch (err) {
+      console.error("Erreur lors du fetch :", err);
+    } finally {
+      // Délai pour laisser le temps à l'affichage avant de repasser à false
+      setPredictionDone(true);
     }
-  }, [predictionDone]);
+  };
+
+  if (predictionDone) {
+    fetchData();
+  }
+}, [predictionDone]);
+
 
   const [displayMode, setDisplayMode] = useState('graph');
   const [downloadFormat, setDownloadFormat] = useState('pdf');
@@ -263,7 +305,7 @@ const GrapheSection = () => {
         {/* Méthode de prédiction */}
         <div className="bg-white p-4 rounded-l shadow-md flex-1 flex flex-col border border-gray-100 hover:shadow-lg transition-shadow">
           <h5 className="text-md font-semibold text-gray-700 mb-2">Créer une prédiction</h5>
-          <select
+          {/* <select
             className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
             onChange={handleModelChange}
           >
@@ -271,9 +313,9 @@ const GrapheSection = () => {
             <option value="lstm">LSTM</option>
             <option value="sarima">SARIMA</option>
             <option value="arima">ARIMA</option>
-          </select>
+          </select> */}
 
-          {showModal && selectedModel === "lstm" && (
+          {/* {showModal && selectedModel === "lstm" && (
             <ModalLSTM onClose={() => setShowModal(false)}
               onPredictionDone={() => setPredictionDone(true)} />
           )}
@@ -285,7 +327,29 @@ const GrapheSection = () => {
           {showModal && selectedModel === "arima" && (
             <ModalArima onClose={() => setShowModal(false)}
               onPredictionDone={() => setPredictionDone(true)} />
-          )}
+          )} */}
+          <select
+            className="w-full border border-gray-200 focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none p-2 rounded-md text-gray-700"
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+          >
+            <option value="">-- Choisir un modèle --</option>
+            <option value="lstm">LSTM</option>
+            <option value="sarima">SARIMA</option>
+            <option value="arima">ARIMA</option>
+          </select>
+
+          <button
+            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            disabled={!selectedModel}
+            onClick={() => setShowModal(true)}
+          >
+            Lancer la prédiction
+          </button>
+          {showModal && selectedModel === "lstm" && <ModalLSTM onClose={() => setShowModal(false)} onPredictionDone={() => setPredictionDone(true)} />}
+          {showModal && selectedModel === "sarima" && <ModalSarima onClose={() => setShowModal(false)} onPredictionDone={() => setPredictionDone(true)} />}
+          {showModal && selectedModel === "arima" && <ModalArima onClose={() => setShowModal(false)} onPredictionDone={() => setPredictionDone(true)} />}
+
         </div>
 
         {/* Format de Téléchargement */}

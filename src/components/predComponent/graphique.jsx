@@ -95,7 +95,7 @@ const Graphique = ({ data = [], predictions = [], minDomain, chartRef }) => {
   );
 
   return (
-    <div ref={chartRef} className="w-full h-96 p-4 rounded-2xl bg-white shadow">
+    <div ref={chartRef} className="w-full h-96 p-4 rounded-2xl">
       <h3 className="text-lg font-bold text-gray-800 mb-3">
         Données réelles vs Prédictions
       </h3>
