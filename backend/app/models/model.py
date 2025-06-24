@@ -87,6 +87,8 @@ class PointPredit(Base):
     id = Column(Integer, primary_key=True, index=True)
     dateP = Column(Date)
     valeur_predite = Column(Float)
+    typep = Column(String)
+
     
     prediction_id = Column(Integer, ForeignKey("prediction.id"), nullable=False)
     prediction = relationship("Prediction", back_populates="points")

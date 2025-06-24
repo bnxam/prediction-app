@@ -10,13 +10,14 @@ from itertools import product
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import warnings
 from app.database import get_db
-from app.models.model import Consommation , Sarima , Arima
+from app.models.model import Consommation , Sarima , Arima ,Prediction, PointPredit
 from app.schemas.userSchema import ConsommationGroupeeResponse
 from app.schemas.prediction import SARIMAPredictionResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
 import datetime
+
 
 # # import traceback
 # from tensorflow.keras.models import Sequential
@@ -370,6 +371,40 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             # Prédiction
             forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
+            somme_actuelle = sum(forecast)
+            somme_clients = db.query(func.sum(PointPredit.valeur_predite)).scalar() or 0
+
+            if round(somme_actuelle, 2) != round(somme_clients, 2):
+                # 4. Création de l'objet Prediction
+                prediction_obj = Prediction(
+                    titre=None,
+                    period=periode,
+                    typeC="SARIMA"
+                )
+                db.add(prediction_obj)
+                db.flush()  # Pour obtenir l'ID sans commit
+
+                # 5. Ajouter les points forecast
+                for date_, val in zip(forecast_dates, forecast.tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="predit",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                # 6. Ajouter les points historiques
+                for date_, val in zip(df.index.tolist(), df["valeur"].tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="historique",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                db.commit()
 
             # Construction du résultat final
             last_prediction_result = {
@@ -391,113 +426,10 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                     "valeurs": df["valeur"].tolist()
                 }
             }
-
-
-    #         # Définir les plages de recherche pour SARIMA
-    #         p = d = q = range(0, 2)
-    #         pdq = list(product(p, d, q))
-    #         P= D = Q = range(0, 2)
-    #         # seasonal_pdq = [(x[0], x[1], x[2], 24) for x in pdq]     # 24 = périodicité horaire
-    #         seasonal_pdq = list(product(P, D, Q, [12]))
-
-    #         best_rmse = float("inf")
-    #         best_model = None
-    #         best_params = None
-    #         best_results = None
-
-
-    #         for param in pdq:
-    #             print("the seasonal param",param)
-    #             for seasonal_param in seasonal_pdq:
-    #                 try:
-    #                     model = SARIMAX(train, order=param, seasonal_order=seasonal_param, enforce_stationarity=False, enforce_invertibility=False)
-    #                     results = model.fit(disp=False)
-    #                     pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
-                        
-    #                     rmse = np.sqrt(mean_squared_error(test, pred))
-
-    #                     if rmse < best_rmse:
-    #                         best_rmse = rmse
-    #                         best_model = results
-    #                         best_params = (param, seasonal_param)
-    #                         best_results = results
-    #                 except:
-    #                     continue
-
-        
-    #         forecast = best_model.forecast(steps=12)
-    #         forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-          
-
-    #         # Calcul du taux d’erreur (MAPE)
-    #         if len(test) >= 12:
-    #             mape = mean_absolute_percentage_error(test[:periode], best_model.predict(start=len(train), end=len(train) + periode - 1))
-    #         else:
-    #             mape = None  # Pas assez de données pour MAPE
-            # last_prediction_result = {
-            #     "message": "Prédiction SARIMA effectuée avec succès",
-            #     "methode": "SARIMA",
-            #     "meilleurs_parametres": {
-            #         "order": best_params[0],
-            #         "seasonal_order": best_params[1]
-            #     },
-            #     # "criteres_information": {
-            #     #     "AIC": round(best_results.aic, 2),
-            #     #     "BIC": round(best_results.bic, 2)
-            #     # },
-            #     "dates_predit": {
-            #         "debut": forecast_dates[0].strftime("%Y-%m-%d"),
-            #         "fin": forecast_dates[-1].strftime("%Y-%m-%d")
-            #     },
-            #     "taux_erreur_mape": round(mape * 100, 2) if mape is not None else "Non calculé",
-            #     "dates": forecast_dates.strftime("%Y-%m-%d %H:%M:%S").tolist(),
-            #     "valeurs": forecast.tolist(),
-            #     "donnees_historiques": {
-            #         "dates": df.index.strftime("%Y-%m-%d %H:%M:%S").tolist(),
-            #         "valeurs": df["valeur"].tolist()
-            #     }
-            # }
-
            
             return JSONResponse(content=last_prediction_result)
         
         elif type_modele == "arima" :
-
-            # Définir les plages de recherche pour SARIMA
-            # p = q = range(0,1 )
-            # p = range(1,2 )
-            # d = range(0, 1)
-            # pdq = list(product(p, d, q))
-
-            # best_rmse = float("inf")
-            # best_model = None
-            # best_params = None
-            # best_results = None
-
-
-            # for param in pdq:
-
-            #     try:
-            #         print("the param",param)
-            #         model = ARIMA(train, order=param)
-            #         results = model.fit()
-            #         pred = results.predict(start=len(train), end=len(train) + len(test) - 1)
-            #         rmse = np.sqrt(mean_squared_error(test, pred))
-
-            #         if rmse < best_rmse:
-            #             best_rmse = rmse
-            #             best_model = results
-            #             best_params = param
-            #             best_results = results
-            #     except:
-            #         continue
-            # if best_model is None:
-            #     raise ValueError("Aucun modèle ARIMA na réussi à sajuster.")
-
-            # forecast = best_model.forecast(steps=12)
-            # print("la valeur predite",forecast)
-            # forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
-            
 
             arima = db.query(Arima).order_by(Arima.id.desc()).first()
             order = (arima.p, arima.d, arima.q)
@@ -506,13 +438,6 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
             mape = arima.mape
-            
-            # forecast = best_model.forecast(steps=periode)
-            # forecast_dates = pd.date_range(start=df["Date"].iloc[-1] + pd.Timedelta(days=1), periods=periode, freq='D')
-
-
-            # Calcul du taux d’erreur (MAPE)
-          
             last_prediction_result ={
                 "message": "Prédiction ARIMA effectuée avec succès",
                 "meilleurs_parametres": {
@@ -546,69 +471,6 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             return JSONResponse(content=last_prediction_result)
 
         elif type_modele == 'lstm':
-            
-            # Normalisation des données
-            
-            # scaler = MinMaxScaler()
-            # values = df["Valeur"].values.reshape(-1, 1)
-            # scaled_values = scaler.fit_transform(values)
-            
-            # # Création des séquences
-            # def create_sequences(data, seq_length):
-            #     X, y = [], []
-            #     for i in range(len(data)-seq_length):
-            #         X.append(data[i:i+seq_length])
-            #         y.append(data[i+seq_length])
-            #     return np.array(X), np.array(y)
-            
-            # seq_length = 3  # Utiliser 24 heures comme séquence historique
-            # X, y = create_sequences(scaled_values, seq_length)
-            
-            # Division train/test
-            # train_size = int(len(X) * 0.8)
-            # X_train, X_test = X[:train_size], X[train_size:]
-            # y_train, y_test = y[:train_size], y[train_size:]
-            # model = tf.keras.models.Sequential([
-            #     tf.keras.layers.LSTM(units=50, return_sequences=True, input_shape=(seq_length, 1)),
-            #     # tf.keras.Dropout(0.2),
-            #     tf.keras.layers.LSTM(units=50),
-            #     # tf.keras.Dropout(0.2),
-            #     tf.keras.layers.Dense(1)
-            # ])
-            # model.compile(optimizer='adam', loss='mean_squared_error')
-            # history = model.fit(
-            #     X_train, y_train,
-            #     epochs=25,  # Large marge (EarlyStopping gère l'arrêt)
-            #     batch_size=12,  # Ni trop petit ni trop grand
-            #     validation_data=(X_test, y_test),
-            #     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)],
-            #     verbose=1
-            # )
-            #     # Prédiction sur les données de test pour calculer l'erreur
-            # test_predict = model.predict(X_test)
-            # test_predict = scaler.inverse_transform(test_predict)
-            # y_test_actual = scaler.inverse_transform(y_test.reshape(-1, 1))
-            
-            # # Calcul du MAPE
-            # mape = mean_absolute_percentage_error(y_test_actual, test_predict)
-            
-            # # Prédiction future
-            # last_sequence = scaled_values[-seq_length:]
-            # predictions = []
-            
-            # for _ in range(periode):
-            #     next_pred = model.predict(last_sequence.reshape(1, seq_length, 1))
-            #     predictions.append(next_pred[0,0])
-            #     last_sequence = np.append(last_sequence[1:], next_pred[0,0])
-            
-            # predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
-            # forecast = predictions.flatten().tolist()
-            
-            # forecast_dates = pd.date_range(
-            #     start=df["Date"].iloc[-1] + pd.Timedelta(hours=1),
-            #     periods=periode,
-            #     freq='H'
-            # )
 
 
             data_list = df.reset_index()
@@ -616,41 +478,6 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             data_list = data_list.to_dict(orient='records')    # [{'date': ..., 'valeur': ...}, {...}, ...]
             # Ensuite, tu appelles :
             outputs = predict_lstm(data_list, nb_predict=12)
-            print("=========== DEBUG LSTM ===========")
-            print("✔️ Clés outputs :", outputs.keys())
-
-            # Vérifier 'history'
-            if "history" in outputs:
-                print("✔️ Clés history :", outputs["history"].history.keys())
-                print("✔️ Dernière loss :", outputs["history"].history['loss'][-1] if 'loss' in outputs["history"].history else "❌ 'loss' manquant")
-                print("✔️ Dernière val_loss :", outputs["history"].history.get('val_loss', ['❌ val_loss manquant'])[-1])
-            else:
-                print("❌ outputs['history'] manquant")
-
-            # Vérifier les forecast_dates
-            if "forecast_dates" in outputs:
-                print("✔️ forecast_dates :", outputs["forecast_dates"])
-                print("✔️ Début :", outputs["forecast_dates"][0])
-                print("✔️ Fin :", outputs["forecast_dates"][-1])
-            else:
-                print("❌ forecast_dates manquant")
-
-            # Vérifier forecast
-            print("✔️ forecast :", outputs.get("forecast", "❌ forecast manquant"))
-
-            # Vérifier mape
-            print("✔️ mape :", outputs.get("mape", "❌ mape manquant"))
-
-            # Vérifier df
-            if "df" in outputs:
-                print("✔️ df type :", type(outputs["df"]))
-                print("✔️ Colonnes df :", outputs["df"].columns)
-                print("✔️ Date dtype :", outputs["df"]['date'].dtype if 'date' in outputs["df"] else "❌ 'date' manquant")
-                print("✔️ Valeur dtype :", outputs["df"]['valeur'].dtype if 'valeur' in outputs["df"] else "❌ 'valeur' manquant")
-            else:
-                print("❌ df manquant")
-
-            print("=========== FIN DEBUG ===========")
 
             history = outputs["history"].history
             last_prediction_result = {
