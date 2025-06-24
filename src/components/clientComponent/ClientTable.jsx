@@ -5,7 +5,7 @@ const ClientTable = ({ users, onEdit, onDelete, onViewData }) => {
   return (
     <div className="overflow-x-auto rounded-l shadow bg-white">
       <table className="min-w-full text-sm text-gray-700">
-        <thead className="bg-[#c9dde0] text-left">
+        <thead className="bg-[#b3cce0] text-left">
         {/* <thead className="bg-[#FBF8EF] text-left"> */}
           <tr>
             <th className="p-4">ID</th>
