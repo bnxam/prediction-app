@@ -1,110 +1,3 @@
-// import React from 'react';
-// import { ProSidebarProvider } from 'react-pro-sidebar';
-// import CustomSidebar from '../components/CustomSidebar';
-// import ProfileInfo from '../components/profilComponents/ProfileInfo';
-// import DateSelector from '../components/profilComponents/DateSelector';
-// import UserBio from '../components/profilComponents/UserBio';
-// export default function Profil() {
-//     const user = {
-//         name: "Dihya",
-//         email: "dihya@example.com",
-//         phone: "+33 6 12 34 56 78",
-//         address: "Tizi Ahmed, Tichy, Bejaia",
-//         photoUrl: ""
-//     };
-
-//     return (
-
-//         <div className="flex h-screen bg-gray-70">
-//             <ProSidebarProvider>
-//                 <CustomSidebar />
-//             </ProSidebarProvider>
-//             <div className="flex-1 p-8 overflow-auto">
-//                 <ProfileInfo user={user} />
-
-//                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-//                     {/* Premier conteneur - Graphique */}
-//                     <div className="md:col-span-2 h-full  p-4 rounded-2xl ">
-//                         <DateSelector />
-//                     </div>
-
-//                     {/* Deuxième conteneur - Tableau */}
-//                     <div className="md:col-span-1 h-full flex flex-col p-4 rounded-2xl ">
-//                         <UserBio />
-//                     </div>
-//                 </div>
-//             </div>
-
-//         </div>
-//     );
-// }
-
-// import React, { useEffect, useState } from 'react';
-// import { ProSidebarProvider } from 'react-pro-sidebar';
-// import CustomSidebar from '../components/CustomSidebar';
-// import ProfileInfo from '../components/profilComponents/ProfileInfo';
-// import DateSelector from '../components/profilComponents/DateSelector';
-// import UserBio from '../components/profilComponents/UserBio';
-// // import { useNavigate } from 'react-router-dom';
-
-// export default function Profil() {
-//     const user = {
-//         name: "Dihya",
-//         email: "dihya@example.com",
-//         phone: "+33 6 12 34 56 78",
-//         address: "Tizi Ahmed, Tichy, Bejaia",
-//         photoUrl: ""
-//     };
-//     // const navigate = useNavigate();
-
-//     const [activeTab, setActiveTab] = useState('profile');
-
-//     // useEffect(() => {
-//     //     const role = localStorage.getItem('role');
-//     //     if (role !== 'admin') {
-//     //         navigate('/connexion'); // ou afficher une erreur
-//     //     }
-//     // }, [navigate]);
-
-//     return (
-//         <div className="flex h-screen bg-gray-70">
-//             <ProSidebarProvider>
-//                 <CustomSidebar />
-//             </ProSidebarProvider>
-//             <div className="flex-1 p-8 overflow-auto">
-//                 {/* Navigation par onglets */}
-//                 <div className="flex border-b border-gray-200 mb-8">
-//                     <button
-//                         onClick={() => setActiveTab('profile')}
-//                         className={`px-4 py-3 font-medium text-sm ${activeTab === 'profile' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-//                     >
-//                         Profil
-//                     </button>
-//                     <button
-//                         onClick={() => setActiveTab('stats')}
-//                         className={`px-4 py-3 font-medium text-sm ${activeTab === 'stats' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-//                     >
-//                         Statistiques
-//                     </button>
-//                 </div>
-
-//                 {/* Contenu des onglets */}
-//                 {activeTab === 'profile' ? (
-//                     <ProfileInfo user={user} />
-//                 ) : (
-//                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-//                         <div className="md:col-span-2">
-//                             <DateSelector />
-//                         </div>
-//                         <div className="md:col-span-1">
-//                             <UserBio />
-//                         </div>
-//                     </div>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// }
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProSidebarProvider } from 'react-pro-sidebar';
@@ -155,39 +48,46 @@ export default function Profil() {
     if (!user) return <div className="p-8 text-red-500">Chargement...</div>;
 
     return (
+        // <div className="flex h-screen bg-gray-70">
+        //     <ProSidebarProvider>
+        //         <CustomSidebar />
+        //     </ProSidebarProvider>
+        //     <div className="flex-1 p-8 pt-[90px] overflow-auto">
+               
+        //             <ProfileInfo user={user} />
+              
+        //             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        //                 <div className="md:col-span-2">
+        //                     <DateSelector />
+        //                 </div>
+        //                 <div className="md:col-span-1">
+        //                     <UserBio />
+        //                 </div>
+        //             </div>
+                
+        //     </div>
+        // </div>
         <div className="flex h-screen bg-gray-70">
-            <ProSidebarProvider>
-                <CustomSidebar />
-            </ProSidebarProvider>
-            <div className="flex-1 p-8 pt-[90px] overflow-auto">
-                <div className="flex border-b border-gray-200 mb-8">
-                    <button
-                        onClick={() => setActiveTab('profile')}
-                        className={`px-4 py-3 font-medium text-sm ${activeTab === 'profile' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Profil
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('stats')}
-                        className={`px-4 py-3 font-medium text-sm ${activeTab === 'stats' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Statistiques
-                    </button>
-                </div>
+  <ProSidebarProvider>
+    <CustomSidebar />
+  </ProSidebarProvider>
 
-                {activeTab === 'profile' ? (
-                    <ProfileInfo user={user} />
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="md:col-span-2">
-                            <DateSelector />
-                        </div>
-                        <div className="md:col-span-1">
-                            <UserBio />
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+  <div className="flex-1 p-8 pt-[90px] overflow-auto">
+    {/* Conteneur principal en deux colonnes */}
+    <div className="flex flex-col md:flex-row gap-8">
+      {/* Colonne gauche : Profil */}
+      <div className="w-full md:w-2/3 mt-6">
+        <ProfileInfo user={user} />
+      </div>
+
+      {/* Colonne droite : Date + Bio */}
+      <div className="w-full md:w-1/3 space-y-6">
+        <DateSelector />
+        <UserBio />
+      </div>
+    </div>
+  </div>
+</div>
+
     );
 }
