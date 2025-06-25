@@ -87,9 +87,7 @@ export default function Fonctionalite() {
                                     {slide.text}
                                 </p>
                                 
-                                <button className="mt-6 px-8 py-3 bg-white text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition-all duration-300 animate-fade-in delay-200 shadow-lg hover:shadow-xl">
-                                    Découvrir
-                                </button>
+                               
                             </div>
                         </div>
                     </SwiperSlide>

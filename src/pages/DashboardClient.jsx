@@ -229,209 +229,323 @@
 //         </div>
 //     );
 // }
-import React, { useState, useRef, useEffect } from 'react';
+// import React, { useState, useRef, useEffect } from 'react';
+// import { ProSidebarProvider } from 'react-pro-sidebar';
+// import SidebarClient from '../components/SidebarClient';
+// import CartesInfoClient from '../components/dashclientComponent/CartesInfoClient';
+// import SalesChartClient from '../components/dashclientComponent/SalesChartClient';
+// import axios from 'axios';
+// import { useNavigate } from 'react-router-dom';
+
+
+// export default function DashboardClient() {
+//     const navigate = useNavigate();
+//     const [dropdownOpen, setDropdownOpen] = useState(false);
+//     const dropdownRef = useRef(null);
+//     const [data, setData] = useState([]);
+//     const [predictions, setPredictions] = useState([]);
+
+//     // useEffect(() => {
+//     //     const fetchData = async () => {
+//     //         try {
+//     //             const token = localStorage.getItem('token'); // ou sessionStorage selon ton app
+//     //             const response = await axios.get('http://localhost:8000/users/me/data', {
+//     //                 headers: {
+//     //                     Authorization: `Bearer ${token}`,
+//     //                 },
+//     //             });
+
+//     //             setData(response.data.data || []);
+//     //             setPredictions(response.data.predictions || []);
+//     //         } catch (error) {
+//     //             console.error('Erreur lors du chargement des données du client:', error);
+//     //         }
+//     //     };
+
+//     //     fetchData();
+//     // }, []);
+//     useEffect(() => {
+//         const role = localStorage.getItem('role');
+//         const token = localStorage.getItem('token');
+
+//         if (role !== 'client' || !token) {
+//             navigate('/'); // Redirige vers l'accueil si non autorisé
+//             return;
+//         }
+
+//         const fetchData = async () => {
+//             try {
+//                 const response = await axios.get('http://localhost:8000/users/me/data', {
+//                     headers: {
+//                         Authorization: `Bearer ${token}`,
+//                     },
+//                 });
+
+//                 setData(response.data.data || []);
+//                 setPredictions(response.data.predictions || []);
+//             } catch (error) {
+//                 console.error('Erreur lors du chargement des données du client:', error);
+//             }
+//         };
+
+//         fetchData();
+//     }, [navigate]);
+
+
+//     // Fusion des données pour le graphique et les téléchargements
+//     // const allData = [
+//     //     ...data.map(d => ({ month: d.month, realValue: d.value, predictedValue: null })),
+//     //     ...predictions.map(p => ({ month: p.month, realValue: null, predictedValue: p.value })),
+//     // ];
+//     const allData = [
+//         ...data.map(d => ({ month: d.date || d.month, realValue: d.valeur || d.value, predictedValue: null })),
+//         ...predictions.map(p => ({ month: p.date || p.month, realValue: null, predictedValue: p.valeur || p.value })),
+//     ];
+
+
+//     // Gestion ouverture / fermeture dropdown
+//     const toggleDropdown = () => {
+//         setDropdownOpen(!dropdownOpen);
+//     };
+
+//     // Fermer dropdown si clic hors
+//     useEffect(() => {
+//         function handleClickOutside(event) {
+//             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+//                 setDropdownOpen(false);
+//             }
+//         }
+
+//         document.addEventListener("mousedown", handleClickOutside);
+//         return () => {
+//             document.removeEventListener("mousedown", handleClickOutside);
+//         };
+//     }, []);
+
+//     // Fonction de téléchargement
+//     const handleDownload = (format) => {
+//         if (format === 'csv') {
+//             const csvRows = [
+//                 ['month', 'realValue', 'predictedValue'],
+//                 ...allData.map(d =>
+//                     `${d.month},${d.realValue !== null ? d.realValue : ''},${d.predictedValue !== null ? d.predictedValue : ''}`
+//                 ),
+//             ];
+//             const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
+//             const encodedUri = encodeURI(csvContent);
+//             const link = document.createElement("a");
+//             link.setAttribute("href", encodedUri);
+//             link.setAttribute("download", "sales_data.csv");
+//             document.body.appendChild(link);
+//             link.click();
+//             document.body.removeChild(link);
+//         }
+
+//         else if (format === 'png' || format === 'pdf') {
+//             const chartElement = document.querySelector("#chart-to-download");
+//             if (!chartElement) return;
+
+//             import('html2canvas').then(({ default: html2canvas }) => {
+//                 html2canvas(chartElement).then(canvas => {
+//                     if (format === 'png') {
+//                         const link = document.createElement("a");
+//                         link.href = canvas.toDataURL("image/png");
+//                         link.download = "chart.png";
+//                         link.click();
+//                     } else if (format === 'pdf') {
+//                         import('jspdf').then(({ jsPDF }) => {
+//                             const pdf = new jsPDF();
+//                             const imgData = canvas.toDataURL("image/png");
+//                             pdf.addImage(imgData, 'PNG', 10, 10, 190, 100); // Ajuste selon dimensions
+//                             pdf.save("chart.pdf");
+//                         });
+//                     }
+//                 });
+//             });
+//         }
+
+//         setDropdownOpen(false);
+//     };
+
+//     return (
+//         <div className="flex h-screen bg-gray-100">
+//             <ProSidebarProvider>
+//                 <SidebarClient />
+//             </ProSidebarProvider>
+
+//             <div className="flex-1 p-8 pt-[120px] overflow-auto">
+//                 {/* Cartes de statistiques */}
+//                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl">
+//                     <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex items-center">
+
+//                         <h3 className="text-lg font-semibold text-gray-800">
+//                             Les Statistiques Clés de mes consommations
+//                         </h3>
+//                     </div>
+//                     <div className="p-5">
+//                         <CartesInfoClient data={allData} />
+//                     </div>
+//                 </div>
+
+//                 {/* Graphique + bouton de téléchargement */}
+//                 <div className="mt-5 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl">
+//                     <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white flex items-center justify-between">
+//                         <h3 className="text-lg font-semibold text-gray-800">
+//                             Mes données et leurs predictions
+//                         </h3>
+//                         <div className="relative" ref={dropdownRef}>
+//                             <button
+//                                 onClick={toggleDropdown}
+//                                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition duration-200"
+//                             >
+//                                 Télécharger
+//                             </button>
+
+//                             <div
+//                                 className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg transform transition-all duration-200 origin-top ${dropdownOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
+//                                     } z-20`}
+//                             >
+//                                 <button
+//                                     onClick={() => handleDownload('csv')}
+//                                     className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg"
+//                                 >
+//                                     Télécharger CSV
+//                                 </button>
+//                                 <button
+//                                     onClick={() => handleDownload('png')}
+//                                     className="w-full text-left px-4 py-2 hover:bg-gray-100"
+//                                 >
+//                                     Télécharger PNG
+//                                 </button>
+//                                 <button
+//                                     onClick={() => handleDownload('pdf')}
+//                                     className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg"
+//                                 >
+//                                     Télécharger PDF
+//                                 </button>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     <div className="p-5" id="chart-to-download">
+//                         <SalesChartClient data={allData} />
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// }
+import React, { useState, useEffect } from 'react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 import SidebarClient from '../components/SidebarClient';
 import CartesInfoClient from '../components/dashclientComponent/CartesInfoClient';
 import SalesChartClient from '../components/dashclientComponent/SalesChartClient';
+import PrixTrimestres from '../components/dashclientComponent/PrixTrimestres';
+import ClientDataTable from '../components/clientComponent/ClientDataTable';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-
 export default function DashboardClient() {
-    const navigate = useNavigate();
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
-    const [data, setData] = useState([]);
-    const [predictions, setPredictions] = useState([]);
+  const navigate = useNavigate();
+  const [data, setData] = useState([]);
+  const [predictions, setPredictions] = useState([]);
+  const [viewMode, setViewMode] = useState('graph');
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const token = localStorage.getItem('token'); // ou sessionStorage selon ton app
-    //             const response = await axios.get('http://localhost:8000/users/me/data', {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`,
-    //                 },
-    //             });
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
 
-    //             setData(response.data.data || []);
-    //             setPredictions(response.data.predictions || []);
-    //         } catch (error) {
-    //             console.error('Erreur lors du chargement des données du client:', error);
-    //         }
-    //     };
+    if (role !== 'client' || !token) {
+      navigate('/');
+      return;
+    }
 
-    //     fetchData();
-    // }, []);
-    useEffect(() => {
-        const role = localStorage.getItem('role');
-        const token = localStorage.getItem('token');
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/users/me/data', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        if (role !== 'client' || !token) {
-            navigate('/'); // Redirige vers l'accueil si non autorisé
-            return;
-        }
-
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/users/me/data', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setData(response.data.data || []);
-                setPredictions(response.data.predictions || []);
-            } catch (error) {
-                console.error('Erreur lors du chargement des données du client:', error);
-            }
-        };
-
-        fetchData();
-    }, [navigate]);
-
-
-    // Fusion des données pour le graphique et les téléchargements
-    // const allData = [
-    //     ...data.map(d => ({ month: d.month, realValue: d.value, predictedValue: null })),
-    //     ...predictions.map(p => ({ month: p.month, realValue: null, predictedValue: p.value })),
-    // ];
-    const allData = [
-        ...data.map(d => ({ month: d.date || d.month, realValue: d.valeur || d.value, predictedValue: null })),
-        ...predictions.map(p => ({ month: p.date || p.month, realValue: null, predictedValue: p.valeur || p.value })),
-    ];
-
-
-    // Gestion ouverture / fermeture dropdown
-    const toggleDropdown = () => {
-        setDropdownOpen(!dropdownOpen);
+        setData(response.data.data || []);
+        setPredictions(response.data.predictions || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données du client:', error);
+      }
     };
 
-    // Fermer dropdown si clic hors
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setDropdownOpen(false);
-            }
-        }
+    fetchData();
+  }, [navigate]);
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+  const allData = [
+    ...data.map(d => ({
+      month: d.date || d.month,
+      realValue: d.valeur || d.value,
+      predictedValue: null,
+    })),
+    ...predictions.map(p => ({
+      month: p.date || p.month,
+      realValue: null,
+      predictedValue: p.valeur || p.value,
+    })),
+  ];
 
-    // Fonction de téléchargement
-    const handleDownload = (format) => {
-        if (format === 'csv') {
-            const csvRows = [
-                ['month', 'realValue', 'predictedValue'],
-                ...allData.map(d =>
-                    `${d.month},${d.realValue !== null ? d.realValue : ''},${d.predictedValue !== null ? d.predictedValue : ''}`
-                ),
-            ];
-            const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "sales_data.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <ProSidebarProvider>
+        <SidebarClient />
+      </ProSidebarProvider>
 
-        else if (format === 'png' || format === 'pdf') {
-            const chartElement = document.querySelector("#chart-to-download");
-            if (!chartElement) return;
+      <div className="flex-1 p-8 pt-[120px] overflow-auto space-y-8">
+        {/* Section 1 : Graphique / Tableau + PrixTrimestres */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-3 bg-white rounded-2xl shadow-xl border border-gray-100">
+            <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Mes données et leurs prédictions
+              </h3>
 
-            import('html2canvas').then(({ default: html2canvas }) => {
-                html2canvas(chartElement).then(canvas => {
-                    if (format === 'png') {
-                        const link = document.createElement("a");
-                        link.href = canvas.toDataURL("image/png");
-                        link.download = "chart.png";
-                        link.click();
-                    } else if (format === 'pdf') {
-                        import('jspdf').then(({ jsPDF }) => {
-                            const pdf = new jsPDF();
-                            const imgData = canvas.toDataURL("image/png");
-                            pdf.addImage(imgData, 'PNG', 10, 10, 190, 100); // Ajuste selon dimensions
-                            pdf.save("chart.pdf");
-                        });
-                    }
-                });
-            });
-        }
-
-        setDropdownOpen(false);
-    };
-
-    return (
-        <div className="flex h-screen bg-gray-100">
-            <ProSidebarProvider>
-                <SidebarClient />
-            </ProSidebarProvider>
-
-            <div className="flex-1 p-8 pt-[120px] overflow-auto">
-                {/* Cartes de statistiques */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl">
-                    <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex items-center">
-
-                        <h3 className="text-lg font-semibold text-gray-800">
-                            Les Statistiques Clés de mes consommations
-                        </h3>
-                    </div>
-                    <div className="p-5">
-                        <CartesInfoClient data={allData} />
-                    </div>
-                </div>
-
-                {/* Graphique + bouton de téléchargement */}
-                <div className="mt-5 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl">
-                    <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                            Mes données et leurs predictions
-                        </h3>
-                        <div className="relative" ref={dropdownRef}>
-                            <button
-                                onClick={toggleDropdown}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition duration-200"
-                            >
-                                Télécharger
-                            </button>
-
-                            <div
-                                className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg transform transition-all duration-200 origin-top ${dropdownOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
-                                    } z-20`}
-                            >
-                                <button
-                                    onClick={() => handleDownload('csv')}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg"
-                                >
-                                    Télécharger CSV
-                                </button>
-                                <button
-                                    onClick={() => handleDownload('png')}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                                >
-                                    Télécharger PNG
-                                </button>
-                                <button
-                                    onClick={() => handleDownload('pdf')}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg"
-                                >
-                                    Télécharger PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-5" id="chart-to-download">
-                        <SalesChartClient data={allData} />
-                    </div>
-                </div>
+              {/* Sélecteur de vue */}
+              <select
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="graph">Vue graphique</option>
+                <option value="table">Vue tabulaire</option>
+              </select>
             </div>
+
+            <div className="p-5 min-h-[360px]">
+              {viewMode === 'graph' ? (
+                <SalesChartClient data={allData} />
+              ) : (
+                <div className="max-h-[350px] overflow-auto border rounded-lg">
+                  <ClientDataTable data={data} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Colonne prix trimestriels */}
+          <div className="md:col-span-1  rounded-2xl">
+            <PrixTrimestres predictions={predictions} />
+          </div>
         </div>
-    );
+
+        {/* Section 2 : Cartes Info */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
+          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Les Statistiques Clés de mes consommations
+            </h3>
+          </div>
+          <div className="p-5">
+            <CartesInfoClient data={allData} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

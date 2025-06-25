@@ -58,17 +58,17 @@ function NavBar() {
                         <div className="flex space-x-3">
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
+                              className="flex items-center space-x-2 bg-[#c1a34f] hover:bg-[#c9b06a] border border-[#8e742c] text-[#fff] px-4 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
                             >
                                 <User className="w-5 h-5" />
                                 <span>Connexion</span>
                             </button>
-                            <button
+                            {/* <button
                                 onClick={() => setShowRegisterModal(true)}
                                 className="flex items-center space-x-2 bg-[#c1a34f] hover:bg-[#c9b06a] border border-[#8e742c] text-[#fff] px-4 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
                             >
                                 <span>S'inscrire</span>
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 </div>
