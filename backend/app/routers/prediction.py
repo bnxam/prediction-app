@@ -10,18 +10,14 @@ from itertools import product
 from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import warnings
 from app.database import get_db
-from app.models.model import Consommation , Sarima , Arima ,Prediction, PointPredit
+from app.models.model import Consommation , Sarima , Arima ,Prediction, PointPredit, LSTM
 from app.schemas.userSchema import ConsommationGroupeeResponse
-from app.schemas.prediction import SARIMAPredictionResponse
+from app.schemas.prediction import PredictionResponse ,LSTMPredictionResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
-import datetime
+from fastapi import HTTPException
 
-
-# # import traceback
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import LSTM, Dense, Dropout
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from collections import defaultdict
@@ -30,17 +26,14 @@ router = APIRouter()
 
 # router = APIRouter()
 warnings.filterwarnings("ignore")
-
-def predict_lstm(data_list, nb_predict, sequence_length=10):
-    # import numpy as np
-    # import pandas as pd
-    # from sklearn.preprocessing import MinMaxScaler
-    # from tensorflow.keras.models import Sequential
-    # from tensorflow.keras.layers import Input, LSTM, Dense
-    # from sklearn.metrics import mean_absolute_percentage_error
-    # import tensorflow as tf
-
+def predict_lstm(data_list, nb_predict, db):
+    # print("je ss pas achou didifeghid daha ",data_list)
+    lstm_config = db.query(LSTM).order_by(LSTM.id.desc()).first()
+    if not lstm_config:
+        raise HTTPException(status_code=404, detail="Configuration LSTM non trouvée")
     # === 1. Construction du DataFrame ===
+    print("je ss pas achou didifeghid daha ",lstm_config)
+    
     df = pd.DataFrame(data_list)
     df["date"] = pd.to_datetime(df["date"])
     df["valeur"] = df["valeur"].fillna(0)
@@ -89,11 +82,12 @@ def predict_lstm(data_list, nb_predict, sequence_length=10):
             y.append(targets[i + look_back])
         return np.array(X), np.array(y)
 
-    X, y = create_sequences(features, target, sequence_length)
-
+    X, y = create_sequences(features, target, lstm_config.seq_length)
+    # print("les sequances",X)
+    # print("les sequances",y)
     # === 4. Modèle LSTM ===
     model = tf.keras.models.Sequential([
-        tf.keras.layers.Input(shape=(sequence_length, len(features_cols))),
+        tf.keras.layers.Input(shape=(lstm_config.seq_length, len(features_cols))),
         tf.keras.layers.LSTM(108, return_sequences=True),
         tf.keras.layers.LSTM(64, return_sequences=True),
         tf.keras.layers.LSTM(64),
@@ -101,10 +95,10 @@ def predict_lstm(data_list, nb_predict, sequence_length=10):
     ])
     model.compile(optimizer='adam', loss='mean_squared_error')
     # model.fit(X, y, epochs=100, batch_size=16, verbose=0)
-    history = model.fit(X, y, epochs=100, batch_size=16, verbose=0)
+    history = model.fit(X, y, epochs=lstm_config.epochs, batch_size=lstm_config.batch_size, verbose=0)
 
     # === 5. Prédictions futures ===
-    last_seq = features[-sequence_length:]
+    last_seq = features[-lstm_config.seq_length:]
     future_preds = []
     future_dates = pd.date_range(df["date"].iloc[-1] + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
 
@@ -132,7 +126,7 @@ def predict_lstm(data_list, nb_predict, sequence_length=10):
             moving_avg_scaled, lag_1_scaled, lag_3_scaled
         ]
         input_seq = np.vstack([last_seq[1:], input_vector])
-        input_seq = input_seq.reshape(1, sequence_length, len(features_cols))
+        input_seq = input_seq.reshape(1, lstm_config.seq_length, len(features_cols))
 
         pred = model.predict(input_seq, verbose=0)[0, 0]
         future_preds.append(pred)
@@ -151,8 +145,7 @@ def predict_lstm(data_list, nb_predict, sequence_length=10):
     # df_result = df_result.rename(columns={"date": "date", "valeur": "valeur"})
 
     # print ("athaaaa",future_preds_inv.tolist())
-    print("resultats_prediction", result,
-            "forecast_dates", future_dates,
+    print("forecast_dates", future_dates,
             "forecast", future_preds_inv.tolist(),
             "history", history,
             "mape", mape,
@@ -160,30 +153,153 @@ def predict_lstm(data_list, nb_predict, sequence_length=10):
     if nb_predict == 4:
         return result
     else:
-        # return {
-        #     "resultats_prediction": result,
-        #     "forecast_dates": future_dates,
-        #     "forecast": future_preds_inv.tolist(),
-        #     "mape": mape,
-        #     "df": df_result
-        # }
-        # return {
-        #     "resultats_prediction": result,
-        #     "forecast_dates": future_dates,
-        #     "forecast": future_preds_inv.tolist(),
-        #     "mape": mape,
-        #     "df": df_result,
-        #     "history": history  # ✅ <-- ajoute ceci
-        # }
         return {
             "resultats_prediction": result,
             "forecast_dates": future_dates,
             "forecast": future_preds_inv.tolist(),
-            "history": history,
             "mape": mape,
-            "df": df
-        }
+            "df": df,
+            "params":{
+                "units1":lstm_config.unitsC1,
+                "units2":lstm_config.unitsC2,
+                "epochs":lstm_config.epochs,
+                "batch_size": lstm_config.batch_size,
+                "seq_len": lstm_config.seq_length,
 
+            }
+
+        }
+# ***********************
+# def predict_lstm(data_list, nb_predict, sequence_length=10):
+#     # === 1. Construction du DataFrame ===
+#     df = pd.DataFrame(data_list)
+#     df["date"] = pd.to_datetime(df["date"])
+#     df["valeur"] = df["valeur"].fillna(0)
+
+#     df["month"] = df["date"].dt.month
+#     df["year"] = df["date"].dt.year
+#     df["quarter"] = df["date"].dt.quarter
+
+#     # Encodage cyclique
+#     df["month_sin"] = np.sin(2 * np.pi * df["month"] / 12)
+#     df["month_cos"] = np.cos(2 * np.pi * df["month"] / 12)
+#     df["quarter_sin"] = np.sin(2 * np.pi * df["quarter"] / 4)
+#     df["quarter_cos"] = np.cos(2 * np.pi * df["quarter"] / 4)
+
+#     # Saisons
+#     df["is_winter"] = df["month"].isin([12, 1, 2]).astype(int)
+#     df["is_summer"] = df["month"].isin([6, 7, 8]).astype(int)
+
+#     # Moyenne mobile et lags
+#     df["moving_avg"] = df["valeur"].rolling(window=3).mean().fillna(method="bfill")
+#     df["lag_1"] = df["valeur"].shift(1).fillna(method="bfill")
+#     df["lag_3"] = df["valeur"].shift(3).fillna(method="bfill")
+
+#     # Normalisation
+#     scaler_val = MinMaxScaler()
+#     df["valeur_scaled"] = scaler_val.fit_transform(df[["valeur"]])
+#     df["year_scaled"] = MinMaxScaler().fit_transform(df[["year"]])
+#     df["moving_avg_scaled"] = MinMaxScaler().fit_transform(df[["moving_avg"]])
+#     df["lag_1_scaled"] = MinMaxScaler().fit_transform(df[["lag_1"]])
+#     df["lag_3_scaled"] = MinMaxScaler().fit_transform(df[["lag_3"]])
+
+#     # === 2. Séparation des features et target ===
+#     features_cols = [
+#         "valeur_scaled", "month_sin", "month_cos", "quarter_sin", "quarter_cos",
+#         "is_winter", "is_summer", "year_scaled", "moving_avg_scaled",
+#         "lag_1_scaled", "lag_3_scaled"
+#     ]
+#     features = df[features_cols].values
+#     target = df["valeur_scaled"].values
+
+#     # === 3. Création des séquences ===
+#     def create_sequences(features, targets, look_back):
+#         X, y = [], []
+#         for i in range(len(features) - look_back):
+#             X.append(features[i:i + look_back])
+#             y.append(targets[i + look_back])
+#         return np.array(X), np.array(y)
+
+#     X, y = create_sequences(features, target, sequence_length)
+
+#     # === 4. Modèle LSTM ===
+#     model = tf.keras.models.Sequential([
+#         tf.keras.layers.Input(shape=(sequence_length, len(features_cols))),
+#         tf.keras.layers.LSTM(108, return_sequences=True),
+#         tf.keras.layers.LSTM(64, return_sequences=True),
+#         tf.keras.layers.LSTM(64),
+#         tf.keras.layers.Dense(1)
+#     ])
+#     model.compile(optimizer='adam', loss='mean_squared_error')
+#     # model.fit(X, y, epochs=100, batch_size=16, verbose=0)
+#     history = model.fit(X, y, epochs=100, batch_size=16, verbose=0)
+
+#     # === 5. Prédictions futures ===
+#     last_seq = features[-sequence_length:]
+#     future_preds = []
+#     future_dates = pd.date_range(df["date"].iloc[-1] + pd.DateOffset(months=1), periods=nb_predict, freq='MS')
+
+#     for date in future_dates:
+#         month = date.month
+#         quarter = ((month - 1) // 3) + 1
+#         sin_m, cos_m = np.sin(2 * np.pi * month / 12), np.cos(2 * np.pi * month / 12)
+#         sin_q, cos_q = np.sin(2 * np.pi * quarter / 4), np.cos(2 * np.pi * quarter / 4)
+#         is_winter = int(month in [12, 1, 2])
+#         is_summer = int(month in [6, 7, 8])
+#         year_scaled = df["year_scaled"].iloc[-1]  # constante
+
+#         # Valeurs précédentes
+#         last_val = future_preds[-1] if future_preds else target[-1]
+#         lag_1, lag_3 = last_val, future_preds[-3] if len(future_preds) >= 3 else last_val
+#         moving_avg = np.mean(future_preds[-3:]) if len(future_preds) >= 3 else last_val
+
+#         lag_1_scaled = df["lag_1_scaled"].mean()
+#         lag_3_scaled = df["lag_3_scaled"].mean()
+#         moving_avg_scaled = df["moving_avg_scaled"].mean()
+
+#         input_vector = [
+#             last_val, sin_m, cos_m, sin_q, cos_q,
+#             is_winter, is_summer, year_scaled,
+#             moving_avg_scaled, lag_1_scaled, lag_3_scaled
+#         ]
+#         input_seq = np.vstack([last_seq[1:], input_vector])
+#         input_seq = input_seq.reshape(1, sequence_length, len(features_cols))
+
+#         pred = model.predict(input_seq, verbose=0)[0, 0]
+#         future_preds.append(pred)
+#         last_seq = input_seq[0]
+
+#     future_preds_inv = scaler_val.inverse_transform(np.array(future_preds).reshape(-1, 1)).flatten()
+
+#     # === 6. MAPE
+#     y_pred = model.predict(X, verbose=0)
+#     y_true_inv = scaler_val.inverse_transform(y.reshape(-1, 1))
+#     y_pred_inv = scaler_val.inverse_transform(y_pred)
+#     mape = mean_absolute_percentage_error(y_true_inv, y_pred_inv)
+#     # === 7. Retour
+#     result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, future_preds_inv)]
+#     df_result = df.copy()
+#     # df_result = df_result.rename(columns={"date": "date", "valeur": "valeur"})
+
+#     # print ("athaaaa",future_preds_inv.tolist())
+#     print("resultats_prediction", result,
+#             "forecast_dates", future_dates,
+#             "forecast", future_preds_inv.tolist(),
+#             "history", history,
+#             "mape", mape,
+#             "df", df)
+#     if nb_predict == 4:
+#         return result
+#     else:
+#         return {
+#             "resultats_prediction": result,
+#             "forecast_dates": future_dates,
+#             "forecast": future_preds_inv.tolist(),
+#             "history": history,
+#             "mape": mape,
+#             "df": df
+#         }
+# *************
 
 # def predict_lstm(data_list, nb_predict, sequence_length=3, test_ratio=0.3):
 #     # Étape 1 : Extraction des valeurs
@@ -325,8 +441,8 @@ def grouper_par_periode(consommations, periode):
 
 # methode post a refaire 
 
-@router.post("/predict", response_model=SARIMAPredictionResponse)
-async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
+@router.post("/predict", response_model=PredictionResponse)
+async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
     global last_prediction_result
     last_prediction_result = {}
     try:
@@ -346,7 +462,8 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
         # Conversion en datetime (optionnelle)
         df["date"] = pd.to_datetime(df["date"])
         df.set_index("date", inplace=True)
-        
+        # print(result)
+        print(type_modele)
         
         train_size = int(len(df) * 0.7)
         train, test = df[:train_size], df[train_size:]
@@ -355,13 +472,14 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
 
             # Récupération du dernier modèle SARIMA enregistré
             sarima = db.query(Sarima).order_by(Sarima.id.desc()).first()
-            # if not sarima:
-            #     raise HTTPException(status_code=404, detail="Aucun modèle SARIMA trouvé en base.")
-
+            if not sarima:
+                raise HTTPException(status_code=404, detail="Aucun modèle SARIMA trouvé en base.")
+            print(sarima)
             # Récupération des paramètres depuis la BDD
             order = (sarima.p, sarima.d, sarima.q)
             seasonal_order = (sarima.P, sarima.D, sarima.Q, sarima.s)
             mape = sarima.mape
+            print("order = (", sarima.p, sarima.d, sarima.q, ") seasonal_order = (", sarima.P, sarima.D, sarima.Q, sarima.s, ") mape = ", sarima.mape)
 
             # Construction du modèle
             model = SARIMAX(train, order=order, seasonal_order=seasonal_order,
@@ -388,12 +506,12 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
 
             # 3. Calculer la somme des consommations actuelles
             somme_actuelle = df["valeur"].sum()
-
+            print(titre)
             # 4. Comparaison
             if round(somme_actuelle, 2) != round(somme_historiques, 2):
                 # 4. Création de l'objet Prediction
                 prediction_obj = Prediction(
-                    titre=None,
+                    titre=titre,
                     period=periode,
                     typeC="SARIMA"
                 )
@@ -420,6 +538,13 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                     )
                     db.add(point)
 
+                
+                last_sarima = db.query(Sarima).order_by(Sarima.id.desc()).first()
+
+                # 3. Lui affecter la prédiction créée
+                if last_sarima:
+                    last_sarima.pred_id = prediction_obj.id
+                    db.add(last_sarima)  
                 db.commit()
 
             # Construction du résultat final
@@ -454,6 +579,62 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
             mape = arima.mape
+
+            last_prediction = db.query(Prediction)\
+                .filter(Prediction.typeC == "ARIMA")\
+                .order_by(Prediction.id.desc())\
+                .first()
+
+            # 2. Récupérer ses points historiques
+            somme_historiques = 0
+            if last_prediction:
+                historiques = db.query(PointPredit)\
+                    .filter(PointPredit.prediction_id == last_prediction.id)\
+                    .filter(PointPredit.typep == "historique")\
+                    .all()
+                somme_historiques = sum(p.valeur_predite for p in historiques)
+
+            # 3. Calculer la somme des consommations actuelles
+            somme_actuelle = df["valeur"].sum()
+
+            # 4. Comparaison
+            if round(somme_actuelle, 2) != round(somme_historiques, 2):
+                # 4. Création de l'objet Prediction
+                prediction_obj = Prediction(
+                    titre=titre,
+                    period=periode,
+                    typeC="ARIMA"
+                )
+                db.add(prediction_obj)
+                db.flush()  # Pour obtenir l'ID sans commit
+
+                # 5. Ajouter les points forecast
+                for date_, val in zip(forecast_dates, forecast.tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="predit",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                # 6. Ajouter les points historiques
+                for date_, val in zip(df.index.tolist(), df["valeur"].tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="historique",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                last_arima = db.query(Arima).order_by(Arima.id.desc()).first()
+
+                if last_arima:
+                    last_arima.pred_id = prediction_obj.id
+                    db.add(last_arima) 
+
+                db.commit()
             last_prediction_result ={
                 "message": "Prédiction ARIMA effectuée avec succès",
                 "meilleurs_parametres": {
@@ -466,7 +647,7 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
                     "AIC": round(results.aic, 2),
                     "BIC": round(results.bic, 2)
                 },
-                "taux_erreur_mape": mape ,
+                "taux_erreur_mape": round(mape, 2),
                 "datesp": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
                 "valeursp": forecast.tolist(),  # valeurs prédites
                 # "dates": forecast_dates.strftime("%Y-%m-%d").tolist(),  # format date simple
@@ -493,26 +674,20 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             data_list['date'] = data_list['date'].astype(str)  # convertir les dates en chaînes
             data_list = data_list.to_dict(orient='records')    # [{'date': ..., 'valeur': ...}, {...}, ...]
             # Ensuite, tu appelles :
-            outputs = predict_lstm(data_list, nb_predict=12)
+            outputs = predict_lstm(data_list, nb_predict=12, db=db)
+            print("Params from outputs:", outputs["params"])
 
-            history = outputs["history"].history
             last_prediction_result = {
                 "message": "Prédiction LSTM effectuée avec succès",
                 "methode": "LSTM",
                 "architecture": {
-                    "couches": [
-                        {"type": "LSTM", "units": 50},
-                        {"type": "Dense", "units": 1}
-                    ],
-                    "optimizer": "adam",
-                    "loss": "mean_squared_error",
-                    "epochs": 50,
-                    "batch_size": 32
+                    "units1": outputs["params"]["units1"],
+                    "units2": outputs["params"]["units2"],
+                    "epochs": outputs["params"]["epochs"],
+                    "batch_size": outputs["params"]["batch_size"],
+                    "seq_len": outputs["params"]["seq_len"],
                 },
-                "performance": {
-                    "loss": history["loss"][-1],
-                    "taux_erreur_mape": round(outputs["mape"] * 100, 2)
-                },
+               
                 "dates_predit": {
                     "debut": outputs["forecast_dates"][0].strftime("%Y-%m-%d %H:%M:%S"),
                     "fin": outputs["forecast_dates"][-1].strftime("%Y-%m-%d %H:%M:%S")

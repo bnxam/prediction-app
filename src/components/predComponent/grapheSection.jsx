@@ -15,18 +15,7 @@ const GrapheSection = () => {
   const [predictionDone, setPredictionDone] = useState(false);
   const [selectedModel, setSelectedModel] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [historicalData, setHistoricalData] = useState([]);
-  const [predictionData, setPredictionData] = useState([]);
 
-  // const handleModelChange = (e) => {
-  //   const model = e.target.value;
-  //   setSelectedModel(model);
-  //   if (model) {
-  //     setShowModal(true);
-  //   } else {
-  //     setShowModal(false);
-  //   }
-  // };
   const handleModelChange = (e) => {
     const value = e.target.value;
 
@@ -58,67 +47,6 @@ const GrapheSection = () => {
   const [dataCom, setDataCom] = useState([]);
   const chartRef = useRef(null);
   const [minDomain, setMinDomain] = useState(0); // Valeur initiale à 0
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const res = await fetch('http://localhost:8000/last_prediction');
-  //       const json = await res.json();
-  //       if (json.dates && json.valeurs && json.donnees_historiques) {
-  //         // Transformation optimale pour le graphique
-  //         const historical = json.donnees_historiques.dates.map((date, index) => ({
-  //           date: date,
-  //           valeur: json.donnees_historiques.valeurs[index],
-  //           type: 'historical'
-  //         }));
-
-  //         const predictions = json.dates.map((date, index) => ({
-  //           date: date,
-  //           valeur: json.valeurs[index],
-  //           type: 'prediction'
-  //         }));
-
-  //         // Calcul du minDomain basé sur les deux jeux de données
-  //         const allValues = [
-  //           ...historical.map(item => item.valeur),
-  //           ...predictions.map(item => item.valeur)
-  //         ];
-  //         const minValue = Math.min(...allValues);
-  //         const calculatedMinDomain = minValue > 0 ? minValue * 0.9 : 0;
-
-  //         // Envoi au graphique exactement ce qu'il attend
-  //         setData(historical);
-  //         setDataCom(predictions);
-  //         setMinDomain(calculatedMinDomain);
-  //         setMetaInfo({
-  //           methode: json.methode,
-  //           dateDebut: json.dates[0],
-  //           debut: json.dates_predit?.debut,
-  //           fin: json.dates_predit?.fin,
-  //           mape: json.taux_erreur_mape ?? json.performance?.taux_erreur_mape ?? null,
-  //           params: json.meilleurs_parametres ?? json.architecture ?? null,
-  //           criteresInfo: json.criteres_information ?? {
-  //             ...(json.performance && {
-  //               loss: json.performance.loss,
-  //               val_loss: json.performance.val_loss
-  //             })
-  //           }
-  //         });
-  //         setPredictionDone(true);
-  //         console.log("anka igemouged les données predites ", predictions);
-  //         console.log("ou wihi win historique ", historical);
-  //       } else {
-  //         console.warn("Aucune donnée de prédiction trouvée.");
-  //       }
-  //     } catch (err) {
-  //       console.error("Erreur lors du fetch :", err);
-  //     }
-  //   };
-
-  //   if (predictionDone) {
-  //     fetchData();
-  //     // setPredictionDone(false);
-  //   }
-  // }, [predictionDone]);
   useEffect(() => {
   const fetchData = async () => {
     try {
@@ -160,7 +88,7 @@ const GrapheSection = () => {
               loss: json.performance.loss,
               val_loss: json.performance.val_loss
             })
-          }
+          } ?? null 
         });
 
         console.log("anka igemouged les données predites ", predictions);
