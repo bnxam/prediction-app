@@ -158,7 +158,7 @@ def get_prediction_by_id(prediction_id: int, db: Session = Depends(get_db)):
         }
     else:
         periode_predite = None
-
+    # print(periode_predite)
     return {
         "id": pred.id,
         "titre": pred.titre,

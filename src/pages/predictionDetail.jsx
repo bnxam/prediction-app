@@ -59,7 +59,8 @@ export default function PredictionDetail() {
                     mape: json.mape,
                     params: json.parametres,
                 });
-
+                // console.log("alzlkdfjf")
+                // console.log(setMetaInfo.dateDebut)
                 setPredictionDone(true);
             } catch (error) {
                 console.error("Erreur fetch prédiction par ID :", error);

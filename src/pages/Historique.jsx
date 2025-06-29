@@ -132,7 +132,7 @@ const Historique = () => {
                   <th className="p-4">Méthode</th>
                   <th className="p-4">Précision</th>
                   <th className="p-4">Statut</th>
-                  <th className="p-4">Actions</th>
+                  {/* <th className="p-4">Actions</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -143,7 +143,7 @@ const Historique = () => {
                       className="hover:bg-[#F2F9FF] transition cursor-pointer"
                     >
                       <td className="p-4">{prediction.date}</td>
-                      <td className="p-4 font-medium max-w-[110px] truncate text-[#315B6D]">{prediction.titre}</td>
+                      <td className="p-4 font-medium max-w-[110px] truncate text-[#315B6D]" title={prediction.titre}>{prediction.titre}</td>
                       <td className="p-4">{prediction.duree}</td>
                       <td className="p-4 text-[#04CBEA]">{prediction.methode}</td>
                       <td className="p-4">{prediction.tauxErreur}</td>
@@ -152,14 +152,14 @@ const Historique = () => {
                           {prediction.status}
                         </span>
                       </td>
-                      <td className="border px-4 py-2">
+                      {/* <td className="border px-4 py-2">
                         <Link
                           to={`/prediction/${prediction.id}`}
                           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                         >
                           Voir
                         </Link>
-                      </td>
+                      </td> */}
                       {/* <td className="p-4 flex gap-2">
                         <button
                           onClick={(e) => handleRowClick(prediction.id)}
