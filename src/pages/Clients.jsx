@@ -14,7 +14,31 @@ const Clients = () => {
     // const [users, setUsers] = useState(dummyUsers);
     const [users, setUsers] = useState([]);
 
+    // useEffect(() => {
+    //     const fetchUsers = async () => {
+    //         try {
+    //             const response = await axios.get('http://localhost:8000/users/', {
+    //                 params: search ? { code_client: search } : {}
+    //             });
+    //             setUsers(response.data);
+    //         } catch (error) {
+    //             console.error('Erreur lors du chargement des utilisateurs :', error);
+    //         }
+    //     };
+
+    //     fetchUsers();
+    // }, [search]);
     useEffect(() => {
+        // const fetchUsers = async () => {
+        //     try {
+        //         const response = await axios.get('http://localhost:8000/users/', {
+        //             params: search ? { code_client: search } : {}
+        //         });
+        //         setUsers(response.data);
+        //     } catch (error) {
+        //         console.error('Erreur lors du chargement des utilisateurs :', error);
+        //     }
+        // };
         const fetchUsers = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/users/', {
@@ -26,8 +50,10 @@ const Clients = () => {
             }
         };
 
+
         fetchUsers();
     }, [search]);
+
 
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,22 +75,51 @@ const Clients = () => {
         return data;
     }
 
-    const handleAddUser = (newUser) => {
-        console.log("Les infos à sauvegarder :", newUser);
+    // const handleAddUser = (newUser) => {
+    //     console.log("Les infos à sauvegarder :", newUser);
 
-        axios.post('http://localhost:8000/users/', newUser)
+    //     axios.post('http://localhost:8000/users/', newUser)
 
-            .then(() => axios.get('http://localhost:8000/users/'))
-            .then(response => {
-                setUsers(response.data);
-            })
-            .catch((error) => {
-                console.error("Erreur lors de l'ajout :", error);
-                if (error.response) {
-                    console.error("Détails de l'erreur :", error.response.data);
-                }
-            });
+    //         .then(() => axios.get('http://localhost:8000/users/'))
+    //         .then(response => {
+    //             setUsers(response.data);
+    //         })
+    //         .catch((error) => {
+    //             console.error("Erreur lors de l'ajout :", error);
+    //             if (error.response) {
+    //                 console.error("Détails de l'erreur :", error.response.data);
+    //             }
+    //         });
+    // };
+    // const handleAddUser = (newUser) => {
+    //     const { code_client, mdp, ...payload } = newUser; // en cas de présence accidentelle
+    //     axios.post('http://localhost:8000/users/', payload)
+    //         .then(() => axios.get('http://localhost:8000/users/'))
+    //         .then(response => {
+    //             setUsers(response.data);
+    //             setIsModalOpen(false); // referme la modal
+    //         })
+    //         .catch((error) => {
+    //             console.error("Erreur lors de l'ajout :", error);
+    //             if (error.response) {
+    //                 console.error("Détails de l'erreur :", error.response.data);
+    //             }
+    //         });
+    // };
+    const handleAddUser = async (newUser) => {
+        try {
+            await axios.post('http://localhost:8000/users/', newUser); // ✅ on attend que l'utilisateur soit bien ajouté
+            await fetchUsers(); // ✅ puis on recharge proprement la liste mise à jour
+            setIsModalOpen(false); // ✅ enfin on ferme la modal
+        } catch (error) {
+            console.error("Erreur lors de l'ajout :", error);
+            if (error.response) {
+                console.error("Détails de l'erreur :", error.response.data);
+            }
+        }
     };
+
+
 
 
     // modification du user 
@@ -76,7 +131,9 @@ const Clients = () => {
 
     const handleUpdateUser = async (updatedUser) => {
         try {
-            await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+            // await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+            await axios.put(`http://localhost:8000/users/${updatedUser.id}`, updatedUser);
+
             const response = await axios.get('http://localhost:8000/users/');
             setUsers(response.data);
             setEditModalOpen(false);
@@ -154,7 +211,7 @@ const Clients = () => {
                             />
 
                             {/* Espace restant avec centrage du bloc client */}
-                            
+
                         </div>
 
 

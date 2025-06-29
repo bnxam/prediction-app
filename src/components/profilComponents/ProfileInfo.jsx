@@ -595,6 +595,8 @@ import React, { useRef, useState } from 'react';
 import PasswordModal from "./PasswordModal";
 import { Save, X, Edit, Lock, Camera, User, Mail, Home, Phone } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from "axios";
+
 
 const ProfileInfo = ({ user }) => {
     const [profileImage, setProfileImage] = useState(user.photoUrl || '');
@@ -611,13 +613,36 @@ const ProfileInfo = ({ user }) => {
     const fileInputRef = useRef();
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-    const handleImageChange = (event) => {
+    // const handleImageChange = (event) => {
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         const imageURL = URL.createObjectURL(file);
+    //         setProfileImage(imageURL);
+    //     }
+    // };
+    const handleImageChange = async (event) => {
         const file = event.target.files[0];
-        if (file) {
-            const imageURL = URL.createObjectURL(file);
-            setProfileImage(imageURL);
+        if (!file) return;
+
+        const token = localStorage.getItem("token");
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await axios.post("http://127.0.0.1:8000/admin/upload-photo", formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
+                },
+            });
+
+            // Mettre à jour l’image affichée
+            setProfileImage(`http://127.0.0.1:8000/uploads/${res.data.filename}`);
+        } catch (error) {
+            console.error("Erreur upload image :", error);
         }
     };
+
 
     const triggerFileInput = () => fileInputRef.current.click();
 
@@ -625,18 +650,45 @@ const ProfileInfo = ({ user }) => {
         setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
     };
 
-    const handleSave = async () => {
-        setIsSaving(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsEditing(false);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-        setIsSaving(false);
-    };
+    // const handleSave = async () => {
+    //     setIsSaving(true);
+    //     await new Promise(resolve => setTimeout(resolve, 1500));
+    //     setIsEditing(false);
+    //     setSaveSuccess(true);
+    //     setTimeout(() => setSaveSuccess(false), 3000);
+    //     setIsSaving(false);
+    // };
 
     const cancelEdit = () => {
         setUserInfo(user);
         setIsEditing(false);
+    };
+    const handleSave = async () => {
+        setIsSaving(true);
+
+        try {
+            const token = localStorage.getItem("token");
+
+            const res = await axios.put("http://127.0.0.1:8000/admin/profile", {
+                email: userInfo.email,
+                nom_entp: userInfo.name,
+                phone: userInfo.phone,
+                address: userInfo.address,
+                pdp: profileImage, // à adapter si c'est juste une URL
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setIsEditing(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (err) {
+            console.error("Erreur lors de l'enregistrement :", err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const fieldIcons = {
@@ -655,17 +707,23 @@ const ProfileInfo = ({ user }) => {
         >
 
             {/* === SECTION INFOS PROFIL === */}
-            
+
             <div className="bg-white p-8 rounded-2xl shadow-xl">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8">
                     {/* Photo */}
                     <div className="relative">
                         <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-xl group">
-                            <img
+                            {/* <img
                                 src={profileImage || "/default-profile.jpg"}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 alt="Profil"
+                            /> */}
+                            <img
+                                src={profileImage || "/default-profile.jpg"}
+                                className="w-full h-full object-cover"
+                                alt="Profil"
                             />
+
                             <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <Camera className="w-7 h-7 text-white" />
                             </div>
@@ -730,7 +788,7 @@ const ProfileInfo = ({ user }) => {
                             ) : (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="bg-[#dd944f] text-white px-5 py-2 rounded-xl hover:bg-gray-800 transition"
+                                    className="bg-[#E69200] text-white px-5 py-2 rounded-xl hover:bg-gray-800 transition"
                                 >
                                     Modifier le profil
                                 </button>

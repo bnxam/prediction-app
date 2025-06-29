@@ -116,9 +116,12 @@ const EditClientModal = ({ isOpen, onClose, user, onSave }) => {
     telephone: '',
     date_naissance: '',
     email: '',
-    mdp: '',
+    // mdp: '',
     fichier_donnees: null,
   });
+
+  // pour gerer l'erreur du format du num de tel  
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (user) {
@@ -130,7 +133,7 @@ const EditClientModal = ({ isOpen, onClose, user, onSave }) => {
         telephone: user.telephone || '',
         date_naissance: user.date_naissance || '',
         email: user.email || '',
-        mdp: '',
+        // mdp: '',
         fichier_donnees: null,
       });
     }
@@ -145,10 +148,51 @@ const EditClientModal = ({ isOpen, onClose, user, onSave }) => {
     }
   };
 
-  const handleSubmit = () => {
-    onSave({ ...user, ...formData });
-    onClose();
+  // pour gerer le format du nom tel 
+  const validate = () => {
+    const newErrors = {};
+
+    // Validation du téléphone
+    if (!formData.telephone.trim()) {
+      newErrors.telephone = 'Champ vide';
+    } else if (!/^((\+213)|0)(5|6|7)[0-9]{8}$/.test(formData.telephone)) {
+      newErrors.telephone = 'Format invalide (ex : 06XXXXXXXX ou +2136XXXXXXXX)';
+    }
+
+    return newErrors;
   };
+
+
+
+  // const handleSubmit = () => {
+  //   onSave({ ...user, ...formData });
+  //   onClose();
+  // };
+  const handleSubmit = () => {
+  const newErrors = {};
+
+  // ✅ Validation téléphone
+  const phoneRegex = /^(0[5-7]|(\+213))[0-9]{8}$/;
+  if (!phoneRegex.test(formData.telephone)) {
+    newErrors.telephone = "Numéro invalide (ex : 06xxxxxxxx ou +213xxxxxxxx)";
+  }
+
+  // ✅ Validation email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    newErrors.email = "Adresse email invalide";
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  onSave({ ...user, ...formData });
+  onClose();
+};
+
+
 
   if (!isOpen || !user) return null;
 
@@ -191,35 +235,30 @@ const EditClientModal = ({ isOpen, onClose, user, onSave }) => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                       {icon}
                     </div>
-                    <input
+                    {/* <input
                       className="w-full pl-10 pr-3 py-2 rounded-md bg-gray-50 border border-slate-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 focus:outline-none"
                       name={name}
                       type={type}
                       value={formData[name]}
                       onChange={handleChange}
+                    /> */}
+                    <input
+                      className={`w-full pl-10 pr-3 py-2 rounded-md bg-gray-50 border ${errors[name] ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:ring-blue-200'
+                        } focus:outline-none`}
+                      name={name}
+                      type={type}
+                      value={formData[name]}
+                      onChange={handleChange}
                     />
+                    {errors[name] && (
+                      <p className="text-xs text-red-500 mt-1">{errors[name]}</p>
+                    )}
+
                   </div>
                 </div>
               ))}
 
-              {/* Mot de passe */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-600 mb-1">
-                  Mot de passe (laisser vide si inchangé)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                    <FiKey />
-                  </div>
-                  <input
-                    type="password"
-                    name="mdp"
-                    value={formData.mdp}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 rounded-md bg-gray-50 border border-slate-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 focus:outline-none"
-                  />
-                </div>
-              </div>
+
 
               {/* Fichier données */}
               <div className="md:col-span-2 mt-2">

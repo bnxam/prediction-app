@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 
 const PasswordModal = ({ onClose }) => {
   const [form, setForm] = useState({
@@ -14,19 +15,41 @@ const PasswordModal = ({ onClose }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation de chargement
-    
-    if (form.newPassword !== form.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
-    } else {
-      alert("Mot de passe modifié avec succès (simulé)");
-      onClose();
-    }
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  if (form.newPassword !== form.confirmPassword) {
+    alert("Les mots de passe ne correspondent pas");
     setIsSubmitting(false);
-  };
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    await axios.put("http://127.0.0.1:8000/admin/change-password", {
+      current_password: form.currentPassword,
+      new_password: form.newPassword
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    alert("Mot de passe modifié avec succès !");
+    onClose();
+  } catch (err) {
+  console.error("Erreur :", err);
+  if (err.response?.data?.detail) {
+    alert(err.response.data.detail); // Affiche "Ancien mot de passe incorrect", etc.
+  } else {
+    alert("Erreur lors du changement de mot de passe");
+  }
+}
+
+
+  setIsSubmitting(false);
+};
+
 
   return (
     <motion.div 

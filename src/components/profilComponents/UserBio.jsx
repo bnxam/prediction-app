@@ -39,14 +39,33 @@
 
 // export default UserBio;
 // UserBio.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaQuoteLeft } from "react-icons/fa";
+import axios from "axios";
 
 const UserBio = ({ initialBio = "" }) => {
   const [bio, setBio] = useState(initialBio);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (e) => setBio(e.target.value);
+
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        "http://127.0.0.1:8000/admin/profile",
+        { note: bio },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la bio :", error);
+    }
+  };
 
   return (
     <div className="w-full max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl border border-purple-100">
@@ -70,7 +89,7 @@ const UserBio = ({ initialBio = "" }) => {
 
       <div className="text-right mt-4">
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={isEditing ? handleSave : () => setIsEditing(true)}
           className="bg-[#9333ea] text-white text-sm px-4 py-2 rounded-lg shadow hover:bg-[#7c3aed] transition duration-200"
         >
           {isEditing ? "Enregistrer" : "Modifier"}

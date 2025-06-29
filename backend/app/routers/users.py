@@ -94,39 +94,94 @@ def update_current_user(
     return current_user
 
 # Create user
+# @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+# async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+#     # Vérifie si l'email existe déjà
+#     if db.query(User).filter(User.email == user.email).first():
+#         raise HTTPException(status_code=400, detail="Email déjà enregistré")
+
+#     # Vérifie si le code client existe déjà
+#     if db.query(User).filter(User.code_client == user.code_client).first():
+#         raise HTTPException(status_code=400, detail="Code client déjà utilisé")
+    
+#     mdp_from_date = user.date_naissance.strftime("%d%m%Y") 
+#     # Hash du mot de passe
+#     hashed_password = pwd_context.hash(mdp_from_date)
+
+#     # Création de l'utilisateur
+#     db_user = User(
+#         code_client=user.code_client,
+#         nom=user.nom,
+#         prenom=user.prenom,
+#         adresse=user.adresse,
+#         telephone=user.telephone,
+#         date_naissance=user.date_naissance,
+#         email=user.email,
+#         mdp=hashed_password
+#     )
+
+#     db.add(db_user)
+#     db.commit()
+#     db.refresh(db_user)
+#     if user.consommations:
+#         for conso in user.consommations:
+#             print(conso.valeur)
+#             print(conso.date)
+#             db_cons = Consommation(
+#                 valeur=conso.valeur,
+#                 date=conso.date,
+#                 client_id=db_user.id
+#             )
+#             db.add(db_cons)
+#         db.commit()
+
+#     train_global_models(db)
+    
+
+#     return db_user
+
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     # Vérifie si l'email existe déjà
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email déjà enregistré")
 
-    # Vérifie si le code client existe déjà
-    if db.query(User).filter(User.code_client == user.code_client).first():
-        raise HTTPException(status_code=400, detail="Code client déjà utilisé")
-    
-    mdp_from_date = user.date_naissance.strftime("%d%m%Y") 
-    # Hash du mot de passe
+    # 🔧 Génère automatiquement un code client unique
+    last_user = db.query(User).order_by(User.id.desc()).first()
+    if last_user and last_user.code_client:
+        try:
+            last_num = int(last_user.code_client.replace("cl", ""))
+        except ValueError:
+            last_num = 0
+    else:
+        last_num = 0
+
+    generated_code = f"cl{last_num + 1:04d}"  # ex: cl0001
+
+    # Génère le mot de passe à partir de la date de naissance
+    mdp_from_date = user.date_naissance.strftime("%d%m%Y")
     hashed_password = pwd_context.hash(mdp_from_date)
 
     # Création de l'utilisateur
     db_user = User(
-        code_client=user.code_client,
+        code_client=generated_code,
         nom=user.nom,
         prenom=user.prenom,
         adresse=user.adresse,
         telephone=user.telephone,
         date_naissance=user.date_naissance,
         email=user.email,
-        mdp=hashed_password
+        mdp=hashed_password,
+        typeC="client"
     )
 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    # Ajout des consommations
     if user.consommations:
         for conso in user.consommations:
-            print(conso.valeur)
-            print(conso.date)
             db_cons = Consommation(
                 valeur=conso.valeur,
                 date=conso.date,
@@ -135,11 +190,10 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
             db.add(db_cons)
         db.commit()
 
+    # Optionnel : entraînement des modèles globaux
     train_global_models(db)
-    
 
     return db_user
-
 
 # Get all users
 # @router.get("/", response_model=list[UserResponse])

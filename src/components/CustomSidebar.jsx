@@ -69,7 +69,7 @@
 //           }}
 //         >
 //           <div style={{ height: '60px' }}></div>
-          
+
 //           {menuItems.map((item) => (
 //             <MenuItem 
 //               key={item.path}
@@ -108,12 +108,23 @@ import React, { useState, useEffect } from 'react';
 import { FaHome, FaUser, FaCog, FaSignOutAlt, FaClock, FaChartLine, FaBars } from 'react-icons/fa';
 import { FaPeopleGroup } from 'react-icons/fa6';
 import LogoProfil from '../assets/images/sonelgazLogo.jpg';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+    if (confirmed) {
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      navigate('/'); // redirige vers l'accueil
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -166,10 +177,15 @@ function Navbar() {
 
             {/* Bouton Déconnexion Desktop */}
             <div className="hidden md:block ml-4">
-              <button className="flex items-center px-4 py-2 rounded-full text-red-400 hover:bg-red-900/30 hover:text-white transition-all duration-300 group">
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center px-4 py-2 rounded-full text-red-400 hover:bg-red-900/30 hover:text-white transition-all duration-300 group"
+              >
                 <FaSignOutAlt className="mr-2 group-hover:rotate-180 transition-transform" />
                 <span>Déconnexion</span>
               </button>
+
             </div>
 
             {/* Menu Mobile Burger */}
@@ -203,10 +219,17 @@ function Navbar() {
                 </Link>
               ))}
               <div className="px-3 py-3">
-                <button className="flex items-center text-red-400 hover:text-white w-full">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex items-center text-red-400 hover:text-white w-full"
+                >
                   <FaSignOutAlt className="mr-3" />
                   Déconnexion
                 </button>
+
               </div>
             </div>
           </div>

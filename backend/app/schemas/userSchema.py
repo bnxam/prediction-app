@@ -61,14 +61,14 @@ class ConsommationResponse(BaseModel):
         from_attributes = True  
 
 class UserCreate(BaseModel):
-    code_client: str  
+    # code_client: str  
     nom: str
     prenom: str
     adresse: str
     telephone: str
     date_naissance: date
     email: EmailStr
-    mdp: str
+    # mdp: str
     consommations: Optional[List[ConsommationCreate]] = None
 
 

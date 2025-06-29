@@ -75,6 +75,9 @@ from app.models.model import Base
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from app.routers import admin  
+# la photo de profil
+from fastapi.staticfiles import StaticFiles
+
 
 
 # Création des tables
@@ -95,6 +98,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# photo de profil
+app.mount("/uploads", StaticFiles(directory="app/uploads"), name="uploads")
+
 # Routes
 
 app.include_router(auth.router, prefix="/auth")
