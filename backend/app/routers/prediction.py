@@ -1136,7 +1136,7 @@ def grouper_par_periode(consommations, periode):
 # methode post a refaire 
 
 @router.post("/predict", response_model=SARIMAPredictionResponse)
-async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
+async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_modele: str = Form(...), db: Session = Depends(get_db)):
     global last_prediction_result
     last_prediction_result = {}
     try:
@@ -1203,7 +1203,7 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             if round(somme_actuelle, 2) != round(somme_historiques, 2):
                 # 4. Création de l'objet Prediction
                 prediction_obj = Prediction(
-                    titre=None,
+                    titre=titre,
                     period=periode,
                     typeC="SARIMA"
                 )
@@ -1264,6 +1264,56 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             forecast = results.forecast(steps=12)
             forecast_dates = pd.date_range(start=df.index[-1] + pd.DateOffset(months=1), periods=12, freq='MS')
             mape = arima.mape
+            # 1. Charger la dernière prédiction ARIMA
+            last_prediction = db.query(Prediction)\
+                .filter(Prediction.typeC == "ARIMA")\
+                .order_by(Prediction.id.desc())\
+                .first()
+
+            # 2. Récupérer ses points historiques
+            somme_historiques = 0
+            if last_prediction:
+                historiques = db.query(PointPredit)\
+                    .filter(PointPredit.prediction_id == last_prediction.id)\
+                    .filter(PointPredit.typep == "historique")\
+                    .all()
+                somme_historiques = sum(p.valeur_predite for p in historiques)
+
+            # 3. Calculer la somme des consommations actuelles
+            somme_actuelle = df["valeur"].sum()
+
+            # 4. Comparaison
+            if round(somme_actuelle, 2) != round(somme_historiques, 2):
+                # 4. Création de l'objet Prediction
+                prediction_obj = Prediction(
+                    titre=titre,
+                    period=periode,
+                    typeC="ARIMA"
+                )
+                db.add(prediction_obj)
+                db.flush()  # Pour obtenir l'ID sans commit
+
+                # 5. Ajouter les points forecast
+                for date_, val in zip(forecast_dates, forecast.tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="predit",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                # 6. Ajouter les points historiques
+                for date_, val in zip(df.index.tolist(), df["valeur"].tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="historique",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                db.commit()
             last_prediction_result ={
                 "message": "Prédiction ARIMA effectuée avec succès",
                 "meilleurs_parametres": {
@@ -1425,45 +1475,98 @@ async def predict_sarima(periode: int = Form(...), type_modele: str = Form(...),
             result = [{"date": d.strftime("%Y-%m-%d"), "valeur": float(v)} for d, v in zip(future_dates, future_preds_inv)]
             df_result = df.copy()
             # df_result = df_result.rename(columns={"date": "date", "valeur": "valeur"})
-            print("\n===== Résultat Final de la Prédiction LSTM =====")
-            print("Message :", "Prédiction LSTM effectuée avec succès")
-            print("Méthode :", "LSTM")
-            print("\n-- Architecture --")
-            print("  Couches :")
-            print("    - LSTM, units:", lstm_config.unitsC1)
-            print("    - Dense, units:", lstm_config.unitsC2)
-            print("  Optimizer :", "adam")
-            print("  Loss :", "mean_squared_error")
-            print("  Epochs :", lstm_config.epochs)
-            print("  Batch Size :", lstm_config.batch_size)
+            # print("\n===== Résultat Final de la Prédiction LSTM =====")
+            # print("Message :", "Prédiction LSTM effectuée avec succès")
+            # print("Méthode :", "LSTM")
+            # print("\n-- Architecture --")
+            # print("  Couches :")
+            # print("    - LSTM, units:", lstm_config.unitsC1)
+            # print("    - Dense, units:", lstm_config.unitsC2)
+            # print("  Optimizer :", "adam")
+            # print("  Loss :", "mean_squared_error")
+            # print("  Epochs :", lstm_config.epochs)
+            # print("  Batch Size :", lstm_config.batch_size)
 
-            print("\n-- Performance --")
-            print("  Loss final :", history.history["loss"][-1])
-            print("  Taux d'erreur MAPE :", round(mape * 100, 2), "%")
+            # print("\n-- Performance --")
+            # print("  Loss final :", history.history["loss"][-1])
+            # print("  Taux d'erreur MAPE :", round(mape * 100, 2), "%")
 
-            print("\n-- Période prédite --")
-            print("  Début :", future_dates[0].strftime("%Y-%m-%d %H:%M:%S"))
-            print("  Fin   :", future_dates[-1].strftime("%Y-%m-%d %H:%M:%S"))
+            # print("\n-- Période prédite --")
+            # print("  Début :", future_dates[0].strftime("%Y-%m-%d %H:%M:%S"))
+            # print("  Fin   :", future_dates[-1].strftime("%Y-%m-%d %H:%M:%S"))
 
-            print("\n-- Dates prédites --")
-            for d in future_dates:
-                print(" ", d.strftime("%Y-%m-%d %H:%M:%S"))
+            # print("\n-- Dates prédites --")
+            # for d in future_dates:
+            #     print(" ", d.strftime("%Y-%m-%d %H:%M:%S"))
 
-            print("\n-- Valeurs prédites --")
-            print(future_preds_inv.tolist())
+            # print("\n-- Valeurs prédites --")
+            # print(future_preds_inv.tolist())
             historical_dates = [str(d) for d in df["date"].tolist()]
-            print("\n-- Données Historiques --")
-            print("  Dates :",historical_dates)
-            print("  Valeurs :", df["valeur"].tolist())
+            # print("\n-- Données Historiques --")
+            # print("  Dates :",historical_dates)
+            # print("  Valeurs :", df["valeur"].tolist())
 
-            print("===== Fin =====\n")
+            # print("===== Fin =====\n")
 
             # print ("athaaaa",future_preds_inv.tolist())
-            print("resultats_prediction", result,
-                    "forecast_dates", future_dates,
-                    "forecast", future_preds_inv.tolist(),
-                    "history",history.history["loss"][-1],
-                    "mape", mape)
+            # print("resultats_prediction", result,
+            #         "forecast_dates", future_dates,
+            #         "forecast", future_preds_inv.tolist(),
+            #         "history",history.history["loss"][-1],
+            #         "mape", mape)
+            # 1. Charger la dernière prédiction SARIMA
+            last_prediction = db.query(Prediction)\
+                .filter(Prediction.typeC == "LSTM")\
+                .order_by(Prediction.id.desc())\
+                .first()
+
+            # 2. Récupérer ses points historiques
+            somme_historiques = 0
+            if last_prediction:
+                historiques = db.query(PointPredit)\
+                    .filter(PointPredit.prediction_id == last_prediction.id)\
+                    .filter(PointPredit.typep == "historique")\
+                    .all()
+                somme_historiques = sum(p.valeur_predite for p in historiques)
+            else :
+                print("je veux juste verifier que ca marche lol bisous ")
+            # 3. Calculer la somme des consommations actuelles
+            somme_actuelle = df["valeur"].sum()
+            print("daha d la somme n les valeurs",round(somme_actuelle, 2))
+            print("daha d la somme n les valeurs historique",round(somme_historiques, 2))
+
+            # 4. Comparaison
+            if round(somme_actuelle, 2) != round(somme_historiques, 2):
+                # 4. Création de l'objet Prediction
+                prediction_obj = Prediction(
+                    titre=titre,
+                    period=periode,
+                    typeC="LSTM"
+                )
+                db.add(prediction_obj)
+                db.flush()  # Pour obtenir l'ID sans commit
+
+                # 5. Ajouter les points forecast
+                for date_, val in zip(future_dates, future_preds_inv.tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="predit",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                # 6. Ajouter les points historiques
+                for date_, val in zip(df["date"].tolist(), df["valeur"].tolist()):
+                    point = PointPredit(
+                        dateP=date_,
+                        valeur_predite=val,
+                        typep="historique",
+                        prediction_id=prediction_obj.id
+                    )
+                    db.add(point)
+
+                db.commit()
             history = history
             last_prediction_result = {
                 "message": "Prédiction LSTM effectuée avec succès",

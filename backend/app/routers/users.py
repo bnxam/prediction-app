@@ -205,7 +205,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         # Passer au prochain groupe de 3
         i += 3
         s += 1
-    predictions = predict_lstm(grouped_data,4)
+    predictions = predict_lstm(grouped_data,4,db)
 
     grouped_data = clean_data(grouped_data)
     predictions = clean_data(predictions)

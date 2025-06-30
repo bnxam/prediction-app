@@ -127,7 +127,7 @@ def train_global_models(db: Session):
 
     if best_params_a:
         arima_entry = Arima(
-            mape=mape_a,
+            mape=round(mape_a,2),
             p=best_params_a[0],
             d=best_params_a[1],
             q=best_params_a[2],

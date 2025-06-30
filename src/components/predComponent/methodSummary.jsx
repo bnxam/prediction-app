@@ -21,7 +21,7 @@ const MethodSummary = ({ metaInfo }) => {
             <p>Units2 : {metaInfo.params.units2}</p>
             <p>Epochs: {metaInfo.params.epochs}</p>
             <p>Batch size : {metaInfo.params.batch_size}</p>
-            <p>Longueur des séquences : {metaInfo.params.seq_len}</p>
+            <p>Longueur des séquences : 3</p>
           </div>
         )}
 
