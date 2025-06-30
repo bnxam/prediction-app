@@ -1230,6 +1230,12 @@ async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_m
                     )
                     db.add(point)
 
+                last_sarima = db.query(Sarima).order_by(Sarima.id.desc()).first()
+
+                # 3. Lui affecter la prédiction créée
+                if last_sarima:
+                    last_sarima.pred_id = prediction_obj.id
+                    db.add(last_sarima)  
                 db.commit()
 
             # Construction du résultat final
@@ -1313,6 +1319,12 @@ async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_m
                     )
                     db.add(point)
 
+                last_arima = db.query(Arima).order_by(Arima.id.desc()).first()
+
+                # 3. Lui affecter la prédiction créée
+                if last_arima:
+                    last_arima.pred_id = prediction_obj.id
+                    db.add(last_arima)  
                 db.commit()
             last_prediction_result ={
                 "message": "Prédiction ARIMA effectuée avec succès",
@@ -1565,7 +1577,12 @@ async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_m
                         prediction_id=prediction_obj.id
                     )
                     db.add(point)
+                last_LSTM = db.query(LSTM).order_by(LSTM.id.desc()).first()
 
+                # 3. Lui affecter la prédiction créée
+                if last_LSTM:
+                    last_LSTM.pred_id = prediction_obj.id
+                    db.add(last_LSTM)  
                 db.commit()
             history = history
             last_prediction_result = {
