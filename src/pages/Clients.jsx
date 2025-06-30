@@ -68,15 +68,34 @@ const Clients = () => {
 
 
     // modification du user 
+    // const handleEdit = (userId) => {
+    //     const user = users.find((u) => u.id === userId);
+    //     setSelectedUser(user);
+    //     setEditModalOpen(true); // tu utilises déjà cet état
+    // };
     const handleEdit = (userId) => {
         const user = users.find((u) => u.id === userId);
         setSelectedUser(user);
         setEditModalOpen(true); // tu utilises déjà cet état
     };
 
-    const handleUpdateUser = async (updatedUser) => {
+    // const handleUpdateUser = async (updatedUser) => {
+    //     try {
+    //         await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+    //         const response = await axios.get('http://localhost:8000/users/');
+    //         setUsers(response.data);
+    //         setEditModalOpen(false);
+    //         setSelectedUser(null);
+    //     } catch (error) {
+    //         console.error("Erreur lors de la mise à jour :", error);
+    //     }
+    // };
+
+ const handleUpdateUser = async (updatedUser) => {
         try {
-            await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+            // await axios.put(`http://localhost:8000/${updatedUser.id}`, updatedUser);
+            await axios.put(`http://localhost:8000/users/${updatedUser.id}`, updatedUser);
+
             const response = await axios.get('http://localhost:8000/users/');
             setUsers(response.data);
             setEditModalOpen(false);
@@ -85,9 +104,12 @@ const Clients = () => {
             console.error("Erreur lors de la mise à jour :", error);
         }
     };
-
-
-    const handleSaveEdit = (updatedUser) => {
+    // const handleSaveEdit = (updatedUser) => {
+    //     setUsers((prev) =>
+    //         prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    //     );
+    // };
+     const handleSaveEdit = (updatedUser) => {
         setUsers((prev) =>
             prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
         );
