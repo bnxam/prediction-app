@@ -123,7 +123,7 @@ class LSTM(Base):
     unitsC2 = Column(Integer)
     seq_length = Column(Integer)
 
-    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=True, unique=True)
 
     prediction_rel = relationship("Prediction", back_populates="lstm")
 
@@ -138,7 +138,7 @@ class Arima(Base):
     d = Column(Integer)
     q = Column(Integer)
 
-    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=True, unique=True)
 
     prediction_rel = relationship("Prediction", back_populates="arima")
 
@@ -156,6 +156,6 @@ class Sarima(Base):
     D = Column(Integer)
     Q = Column(Integer)
 
-    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=False, unique=True)
+    pred_id = Column(Integer, ForeignKey("prediction.id"), nullable=True, unique=True)
     
     prediction_rel = relationship("Prediction", back_populates="sarima")

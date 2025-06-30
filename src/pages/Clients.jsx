@@ -8,7 +8,7 @@ import AddClientModal from '../components/clientComponent/AddClientModal';
 import EditClientModal from '../components/clientComponent/EditClientModal';
 import ClientDataViewer from '../components/clientComponent/ClientDataViewer';
 import axios from 'axios';
-
+    
 const Clients = () => {
     const [search, setSearch] = useState('');
     // const [users, setUsers] = useState(dummyUsers);

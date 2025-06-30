@@ -17,6 +17,7 @@ import Client from './pages/Clients';
 import Profil from './pages/profil';
 import ProfilClient from './pages/ProfilClient';
 import DashboardClient from './pages/DashboardClient';
+import PredictionDetail from './pages/predictionDetail';
 
 
 
@@ -35,6 +36,8 @@ function App() {
         <Route path="/Client" element={<Client/>} />
         <Route path="/profilclient" element={<ProfilClient/>} />
         <Route path="/dashboardclient" element={<DashboardClient/>} />
+        <Route path="/historique/:predictionId" element={<PredictionDetail />} />
+
       </Routes>
     </BrowserRouter>
   );

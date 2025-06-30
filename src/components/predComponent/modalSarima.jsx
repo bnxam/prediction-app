@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 
 export default function ModalSarima({ onClose , onPredictionDone }) {
   const [period, setPeriod] = useState(1);
+  const [titre, setTitre] = useState("");
   // const [file, setFile] = useState(null);
 
   const handleValidate = async () => {
     const formData = new FormData();
     // formData.append("type_modele", selectedMethod);
     formData.append("periode", parseInt(period));
+    formData.append("titre", titre);
     // if (file) {
     //   formData.append("fichier", file);
     //   console.log(file)
@@ -63,6 +65,17 @@ export default function ModalSarima({ onClose , onPredictionDone }) {
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
             />
           </div> */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Titre
+            </label>
+            <input
+              value={titre}
+              onChange={(e) => setTitre(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Période de prédiction
