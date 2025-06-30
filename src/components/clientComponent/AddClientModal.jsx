@@ -5,7 +5,7 @@ import { FiX, FiUserPlus, FiKey, FiMail, FiPhone, FiHome, FiCalendar, FiUser, Fi
 const AddClientModal = ({ isOpen, onClose, onSave }) => {
 
     const [formData, setFormData] = useState({
-        // code_client: '',
+        code_client: '',
         nom: '',
         prenom: '',
         adresse: '',
@@ -50,7 +50,7 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
     };
     const validate = () => {
         const newErrors = {};
-        // if (!formData.code_client.trim()) newErrors.code_client = 'Champ requis';
+        if (!formData.code_client.trim()) newErrors.code_client = 'Champ requis';
         if (!formData.nom.trim()) newErrors.nom = 'Champ requis';
         if (!formData.prenom.trim()) newErrors.prenom = 'Champ requis';
         if (!formData.adresse.trim()) newErrors.adresse = 'Champ requis';
@@ -148,7 +148,7 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
 
 
     const fieldConfig = [
-        // { label: 'Code Client', name: 'code_client', type: 'text', icon: <FiCode /> },
+        { label: 'Code Client', name: 'code_client', type: 'text', icon: <FiCode /> },
         { label: 'Nom', name: 'nom', type: 'text', icon: <FiUser /> },
         { label: 'Prénom', name: 'prenom', type: 'text', icon: <FiUser /> },
         { label: 'Adresse', name: 'adresse', type: 'text', icon: <FiHome /> },

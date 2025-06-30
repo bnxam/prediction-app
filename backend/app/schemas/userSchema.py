@@ -40,6 +40,64 @@
 
 #     class Config:
 #         from_attributes = True
+# ///////////////////////////////////////////////////////////////////////////////////////////////
+# from pydantic import BaseModel, EmailStr
+# from typing import Optional
+# from datetime import date
+# from typing import List
+
+# class ConsommationCreate(BaseModel):
+#     valeur: Optional[float]
+#     date: date
+    
+# class ConsommationGroupeeResponse(BaseModel):
+#     date: date
+#     valeur: Optional[float]
+
+# class ConsommationResponse(BaseModel):
+#     id: int
+#     client_id: int
+
+#     class Config:
+#         from_attributes = True  
+
+# class UserCreate(BaseModel):
+#     code_client: str  
+#     nom: str
+#     prenom: str
+#     adresse: str
+#     telephone: str
+#     date_naissance: date
+#     email: EmailStr
+#     # mdp: str
+#     consommations: Optional[List[ConsommationCreate]] = None
+
+
+# class UserResponse(BaseModel):
+#     id: int
+#     code_client: str  
+#     nom: str
+#     prenom: str
+#     adresse: str
+#     telephone: str
+#     date_naissance: date
+#     email: EmailStr
+#     data: List[ConsommationResponse] = []
+
+#     class Config:
+#         from_attributes = True
+
+
+# class UserUpdate(BaseModel):
+#     code_client: Optional[str] = None  
+#     nom: Optional[str] = None
+#     prenom: Optional[str] = None
+#     adresse: Optional[str] = None
+#     telephone: Optional[str] = None
+#     date_naissance: Optional[date] = None
+#     email: Optional[EmailStr] = None
+#     mdp: Optional[str] = None
+
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import date
@@ -61,7 +119,7 @@ class ConsommationResponse(BaseModel):
         from_attributes = True  
 
 class UserCreate(BaseModel):
-    # code_client: str  
+    code_client: str  
     nom: str
     prenom: str
     adresse: str
@@ -69,6 +127,7 @@ class UserCreate(BaseModel):
     date_naissance: date
     email: EmailStr
     # mdp: str
+    mdp: Optional[str] = None  # ✅ maintenant il n’est plus requis
     consommations: Optional[List[ConsommationCreate]] = None
 
 
@@ -96,4 +155,3 @@ class UserUpdate(BaseModel):
     date_naissance: Optional[date] = None
     email: Optional[EmailStr] = None
     mdp: Optional[str] = None
-
