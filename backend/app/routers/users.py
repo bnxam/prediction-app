@@ -66,7 +66,7 @@ async def get_my_data(
         s += 1
 
     grouped_data = clean_data(grouped_data)
-    predictions = predict_lstm(grouped_data, 4)
+    predictions = predict_lstm(grouped_data, 4,db)
     predictions = clean_data(predictions)
 
     return {
