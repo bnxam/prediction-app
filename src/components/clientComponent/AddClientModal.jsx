@@ -54,7 +54,13 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
         if (!formData.nom.trim()) newErrors.nom = 'Champ requis';
         if (!formData.prenom.trim()) newErrors.prenom = 'Champ requis';
         if (!formData.adresse.trim()) newErrors.adresse = 'Champ requis';
-        if (!formData.telephone.trim()) newErrors.telephone = 'Champ requis';
+        // if (!formData.telephone.trim()) newErrors.telephone = 'Champ requis';
+        if (!formData.telephone.trim()) {
+            newErrors.telephone = 'Le numéro de téléphone est requis';
+        } else if (!/^((\+213)|0)(5|6|7)[0-9]{8}$/.test(formData.telephone)) {
+            newErrors.telephone = 'Numéro de téléphone invalide ';
+        }
+
         if (!formData.date_naissance.trim()) newErrors.date_naissance = 'Champ requis';
         if (!formData.email.trim()) {
             newErrors.email = 'Champ requis';
