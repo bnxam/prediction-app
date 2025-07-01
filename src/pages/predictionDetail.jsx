@@ -31,7 +31,7 @@ export default function PredictionDetail() {
             try {
                 const res = await fetch(`http://localhost:8000/historique/${predictionId}`);
                 const json = await res.json();
-                console.log('koulech ididfegh daha normalemnt ',json)
+                // console.log('koulech ididfegh daha normalemnt ',json)
                 const historical = json.historique.map((item) => ({
                     date: item.date,
                     valeur: item.valeur,
@@ -49,6 +49,7 @@ export default function PredictionDetail() {
                 const calculatedMinDomain = minVal > 0 ? minVal * 0.9 : 0;
 
                 setData(historical);
+                console.log('les donnes historique',historical)
                 setDataCom(predictions);
                 setMinDomain(calculatedMinDomain);
 
