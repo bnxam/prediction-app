@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export default function ModalArima({ onClose, onPredictionDone }) {
-  const [period, setPeriod] = useState(1);
+  const [period, setPeriod] = useState(12);
   const [titre, setTitre] = useState("");
   // const [file, setFile] = useState(null);
 
@@ -87,7 +87,7 @@ export default function ModalArima({ onClose, onPredictionDone }) {
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-purple-300"
             >
               <option value="">-- Sélectionnez une période --</option>
-              <option value={1}>Mois</option>
+              <option value={12}>Mois</option>
               <option value={4}>Trimestre</option>
               <option value={12}>Année</option>
             </select>

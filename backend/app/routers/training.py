@@ -81,7 +81,7 @@ def train_global_models(db: Session):
     best_rmse_a = float("inf")
     best_model_a = None
     best_params_a = None
-    pdq_arima = list(product(range(0, 3), repeat=3))
+    pdq_arima = list(product(range(1, 3), repeat=3))
 
     for param in pdq_arima:
         try:

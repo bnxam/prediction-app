@@ -31,7 +31,7 @@ export default function PredictionDetail() {
             try {
                 const res = await fetch(`http://localhost:8000/historique/${predictionId}`);
                 const json = await res.json();
-
+                console.log('koulech ididfegh daha normalemnt ',json)
                 const historical = json.historique.map((item) => ({
                     date: item.date,
                     valeur: item.valeur,
@@ -54,10 +54,10 @@ export default function PredictionDetail() {
 
                 setMetaInfo({
                     methode: json.type,
-                    dateDebut: json.periode_predite?.debut,
-                    dateFin: json.periode_predite?.fin,
+                    debut: json.debut,
+                    fin: json.fin,
                     mape: json.mape,
-                    params: json.parametres,
+                    params: json.parametres, 
                 });
                 // console.log("alzlkdfjf")
                 // console.log(setMetaInfo.dateDebut)

@@ -120,6 +120,57 @@ def supprimer_prediction(prediction_id: int, db: Session = Depends(get_db)):
     return {"message": "Prédiction supprimée avec succès"}
 
 
+# @router.get("/{prediction_id}")
+# def get_prediction_by_id(prediction_id: int, db: Session = Depends(get_db)):
+#     pred = db.query(Prediction).filter(Prediction.id == prediction_id).first()
+#     if not pred:
+#         raise HTTPException(status_code=404, detail="Prédiction non trouvée")
+
+#     points = db.query(PointPredit).filter(PointPredit.prediction_id == prediction_id).all()
+#     points_predit = [{"date": p.dateP.strftime("%Y-%m-%d"), "valeur": p.valeur_predite} for p in points if p.typep == "predit"]
+#     points_hist = [{"date": p.dateP.strftime("%Y-%m-%d"), "valeur": p.valeur_predite} for p in points if p.typep == "historique"]
+
+#     # MAPE
+#     if pred.typeC == "SARIMA" and pred.sarima:
+#         mape = round(pred.sarima.mape,2)
+#         params = {"p": pred.sarima.p, "d": pred.sarima.d, "q": pred.sarima.q}
+#     elif pred.typeC == "ARIMA" and pred.arima:
+#         mape = round(pred.arima.mape,2)
+#         params = {"p": pred.arima.p, "d": pred.arima.d, "q": pred.arima.q}
+#     elif pred.typeC == "LSTM" and pred.lstm:
+#         mape = round(pred.lstm.mape,2)
+#         params = {
+#             "epochs": pred.lstm.epochs,
+#             "batch_size": pred.lstm.batch_size,
+#             "unitsC1": pred.lstm.unitsC1,
+#             "unitsC2": pred.lstm.unitsC2,
+#             "seq_length": pred.lstm.seq_length
+#         }
+#     else:
+#         mape = None
+#         params = {}
+    
+#     # Période prédite (si disponible)
+#     if points_predit:
+#         periode_predite = {
+#             "debut": points_predit[0]["date"],
+#             "fin": points_predit[-1]["date"]
+#         }
+#     else:
+#         periode_predite = None
+#     # print(periode_predite)
+#     return {
+#         "id": pred.id,
+#         "titre": pred.titre,
+#         "type": pred.typeC,
+#         "periode": pred.period,
+#         "date_prediction": pred.date_cree.strftime("%Y-%m-%d"),
+#         "periode_predite": periode_predite,
+#         "mape": round(mape, 2) if mape is not None else None,
+#         "parametres": params,
+#         "predit": points_predit,
+#         "historique": points_hist
+#     }
 @router.get("/{prediction_id}")
 def get_prediction_by_id(prediction_id: int, db: Session = Depends(get_db)):
     pred = db.query(Prediction).filter(Prediction.id == prediction_id).first()
@@ -130,27 +181,42 @@ def get_prediction_by_id(prediction_id: int, db: Session = Depends(get_db)):
     points_predit = [{"date": p.dateP.strftime("%Y-%m-%d"), "valeur": p.valeur_predite} for p in points if p.typep == "predit"]
     points_hist = [{"date": p.dateP.strftime("%Y-%m-%d"), "valeur": p.valeur_predite} for p in points if p.typep == "historique"]
 
-    # MAPE
+    # MAPE + paramètres
     if pred.typeC == "SARIMA" and pred.sarima:
-        mape = pred.sarima.mape
-        params = {"p": pred.sarima.p, "d": pred.sarima.d, "q": pred.sarima.q}
+        mape = round(pred.sarima.mape, 2)
+        params = {
+            "p": pred.sarima.p,
+            "d": pred.sarima.d,
+            "q": pred.sarima.q,
+            "order": [pred.sarima.p, pred.sarima.d, pred.sarima.q],
+            "P": pred.sarima.P,
+            "D": pred.sarima.D,
+            "Q": pred.sarima.Q,
+            "s": pred.sarima.s,
+            "seasonal_order": [pred.sarima.P, pred.sarima.D, pred.sarima.Q, pred.sarima.s]
+        }
     elif pred.typeC == "ARIMA" and pred.arima:
-        mape = pred.arima.mape
-        params = {"p": pred.arima.p, "d": pred.arima.d, "q": pred.arima.q}
+        mape = round(pred.arima.mape, 2)
+        params = {
+            "p": pred.arima.p,
+            "d": pred.arima.d,
+            "q": pred.arima.q,
+            "order": [pred.arima.p, pred.arima.d, pred.arima.q]
+        }
     elif pred.typeC == "LSTM" and pred.lstm:
-        mape = pred.lstm.mape
+        mape = round(pred.lstm.mape, 2)
         params = {
             "epochs": pred.lstm.epochs,
             "batch_size": pred.lstm.batch_size,
-            "unitsC1": pred.lstm.unitsC1,
-            "unitsC2": pred.lstm.unitsC2,
+            "units1": pred.lstm.unitsC1,
+            "units2": pred.lstm.unitsC2,
             "seq_length": pred.lstm.seq_length
         }
     else:
         mape = None
         params = {}
-    
-    # Période prédite (si disponible)
+
+    # Période prédite
     if points_predit:
         periode_predite = {
             "debut": points_predit[0]["date"],
@@ -158,15 +224,16 @@ def get_prediction_by_id(prediction_id: int, db: Session = Depends(get_db)):
         }
     else:
         periode_predite = None
-    # print(periode_predite)
+
     return {
         "id": pred.id,
         "titre": pred.titre,
         "type": pred.typeC,
         "periode": pred.period,
         "date_prediction": pred.date_cree.strftime("%Y-%m-%d"),
-        "periode_predite": periode_predite,
-        "mape": round(mape, 2) if mape is not None else None,
+        "debut": points_predit[0]["date"],
+        "fin": points_predit[-1]["date"],
+        "mape": mape,
         "parametres": params,
         "predit": points_predit,
         "historique": points_hist
