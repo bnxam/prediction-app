@@ -16,8 +16,8 @@ const Acceuil = () => {
             <NavBar />
             {/* <Presentation /> */}
             <Fonctionalite />
-            <Paiement />
-            <HowItWorks />
+            {/* <Paiement /> */}
+            {/* <HowItWorks /> */}
             <Footer />
         </div>
     );
