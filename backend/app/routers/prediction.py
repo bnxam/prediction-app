@@ -1590,8 +1590,8 @@ async def predict_sarima(periode: int = Form(...),titre: str = Form(...), type_m
                 "methode": "LSTM",
                 "architecture": {
                     "couches": [
-                        {"type": "LSTM", "units": lstm_config.unitsC1},
-                        {"type": "Dense", "units": lstm_config.unitsC2}
+                        {"units1": lstm_config.unitsC1},
+                        {"units2": lstm_config.unitsC2}
                     ],
                     "optimizer": "adam",
                     "loss": "mean_squared_error",

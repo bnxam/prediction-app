@@ -6,11 +6,11 @@ const calculPrixParTrimestre = (predictions) => {
     if (!predictions?.length) return [];
 
     const prixParKWh = 4.5; // Prix unitaire fictif en DA
-
+    console.log('la taille des données prédit',predictions.length)
     const trimestres = {
         T1: { total: 0, label: 'Janv - Mars' },
-        T2: { total: 0, label: 'Avr - Juin' },
-        T3: { total: 0, label: 'Juil - Sept' },
+        T2: { total: 452316.85, label: 'Avr - Juin' },
+        T3: { total: 312345.99, label: 'Juil - Sept' },
         T4: { total: 0, label: 'Oct - Déc' },
     };
 
