@@ -2,17 +2,6 @@ from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-
-# class Admin(Base):
-#     __tablename__ = "admin"
-
-#     id = Column(Integer, primary_key=True)
-#     email = Column(String)
-#     mdp = Column(String)
-#     note = Column(String)
-#     pdp = Column(String)
-#     nom_entp = Column(String)
-
 class Admin(Base):
     __tablename__ = "admin"
 
@@ -24,6 +13,8 @@ class Admin(Base):
     nom_entp = Column(String)  # nom entreprise ou nom admin
     phone = Column(String, nullable=True)
     address = Column(String, nullable=True)
+
+ 
 
 # class User(Base):
 #     __tablename__ = "users"

@@ -12,7 +12,7 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
         telephone: '',
         date_naissance: '',
         email: '',
-        mdp: '',
+        // mdp: '',
         fichier_donnees: null, // 👈 nouveau champ
     });
 
@@ -36,7 +36,7 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
 
     const resetForm = () => {
         setFormData({
-            code_client: '',
+            // code_client: '',
             nom: '',
             prenom: '',
             adresse: '',
@@ -73,77 +73,77 @@ const AddClientModal = ({ isOpen, onClose, onSave }) => {
 
 
 
-const handleSubmit = () => {
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-    }
+    const handleSubmit = () => {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
 
-    const { fichier_donnees, ...clientData } = formData;
+        const { fichier_donnees, ...clientData } = formData;
 
-    if (fichier_donnees) {
-        const reader = new FileReader();
+        if (fichier_donnees) {
+            const reader = new FileReader();
 
-        reader.onload = async (event) => {
-            const fileContent = event.target.result;
+            reader.onload = async (event) => {
+                const fileContent = event.target.result;
 
-            const rows = fileContent
-                .split('\n')
-                .map(row => row.split(',').map(cell => cell.trim()));
-            const headers = rows[0];
-            const dataRows = rows.slice(1).filter(row => row.length === headers.length);
+                const rows = fileContent
+                    .split('\n')
+                    .map(row => row.split(',').map(cell => cell.trim()));
+                const headers = rows[0];
+                const dataRows = rows.slice(1).filter(row => row.length === headers.length);
 
-            const donneesFichier = dataRows.map(row => {
-                const obj = {};
-                headers.forEach((header, i) => {
-                    if (header === "valeur") {
-                        obj[header] = parseFloat(row[i]);
-                    } else if (header === "date") {
-                        // Formatage robuste de la date
-                        const dateStr = row[i];
-                        const dateObj = new Date(dateStr);
-                        
-                        // Vérification que la date est valide
-                        if (isNaN(dateObj.getTime())) {
-                            console.error(`Date invalide: ${dateStr}`);
-                            return null;
+                const donneesFichier = dataRows.map(row => {
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        if (header === "valeur") {
+                            obj[header] = parseFloat(row[i]);
+                        } else if (header === "date") {
+                            // Formatage robuste de la date
+                            const dateStr = row[i];
+                            const dateObj = new Date(dateStr);
+
+                            // Vérification que la date est valide
+                            if (isNaN(dateObj.getTime())) {
+                                console.error(`Date invalide: ${dateStr}`);
+                                return null;
+                            }
+
+                            // Formatage en YYYY-MM-DD
+                            const year = dateObj.getFullYear();
+                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const day = String(dateObj.getDate()).padStart(2, '0');
+                            obj[header] = `${year}-${month}-${day}`;
+                        } else {
+                            obj[header] = row[i];
                         }
-                        
-                        // Formatage en YYYY-MM-DD
-                        const year = dateObj.getFullYear();
-                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const day = String(dateObj.getDate()).padStart(2, '0');
-                        obj[header] = `${year}-${month}-${day}`;
-                    } else {
-                        obj[header] = row[i];
-                    }
-                });
-                return obj;
-            }).filter(item => item !== null); // Filtre les éventuelles dates invalides
+                    });
+                    return obj;
+                }).filter(item => item !== null); // Filtre les éventuelles dates invalides
 
-            const payload = {
-                ...clientData,
-                consommations: donneesFichier,
+                const payload = {
+                    ...clientData,
+                    consommations: donneesFichier,
+                };
+
+                console.log("Payload envoyé à l'API:", payload); // Pour débogage
+                onSave(payload);
+                onClose();
+                resetForm();
             };
 
-            console.log("Payload envoyé à l'API:", payload); // Pour débogage
+            reader.readAsText(fichier_donnees);
+        } else {
+            const payload = {
+                ...clientData,
+                consommations: [],
+            };
             onSave(payload);
             onClose();
             resetForm();
-        };
-
-        reader.readAsText(fichier_donnees);
-    } else {
-        const payload = {
-            ...clientData,
-            consommations: [],
-        };
-        onSave(payload);
-        onClose();
-        resetForm();
-    }
-};
+        }
+    };
 
 
 
@@ -169,11 +169,11 @@ const handleSubmit = () => {
                         className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden"
                     >
                         {/* Header avec dégradé */}
-                        <div className="p-4 bg-yellow-400">
+                        <div className="p-4 bg-blue-200">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
-                                    <FiUserPlus className="text-white text-lg" />
-                                    <h2 className="text-lg font-semibold text-white">
+                                    <FiUserPlus className="text-blue-600 text-lg" />
+                                    <h2 className="text-lg font-semibold text-blue-600">
                                         Ajouter un client
                                     </h2>
                                 </div>
@@ -248,7 +248,7 @@ const handleSubmit = () => {
                                     whileHover={{ scale: 1.03 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={handleSubmit}
-                                    className="px-4 py-2 bg-yellow-400  text-white rounded-lg hover:from-amber-500 hover:to-orange-600"
+                                    className="px-4 py-2 bg-blue-200 text-blue-600 rounded-lg hover:from-amber-500 hover:to-orange-600"
                                 >
                                     Ajouter
                                 </motion.button>
